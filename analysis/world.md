@@ -1,15 +1,10 @@
-analysis_template
+World
 ================
-David Shaw
-10/21/2021
 
--   [`world` Analysis](#world-analysis)
-    -   [Intro](#intro)
-    -   [Requirements](#requirements)
-    -   [Read in Data](#read-in-data)
-    -   [Exploratory Data Anaysis](#exploratory-data-anaysis)
-
-# `world` Analysis
+-   [Intro](#intro)
+-   [Requirements](#requirements)
+-   [Read in Data](#read-in-data)
+-   [Exploratory Data Anaysis](#exploratory-data-anaysis)
 
 ## Intro
 
@@ -48,12 +43,6 @@ dim(df)
 ```
 
     ## [1] 8427   55
-
-``` r
-print(params$channel)
-```
-
-    ## [1] "world"
 
 ## Exploratory Data Anaysis
 

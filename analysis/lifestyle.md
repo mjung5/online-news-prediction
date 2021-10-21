@@ -1,15 +1,10 @@
-analysis_template
+Lifestyle
 ================
-David Shaw
-10/21/2021
 
--   [`lifestyle` Analysis](#lifestyle-analysis)
-    -   [Intro](#intro)
-    -   [Requirements](#requirements)
-    -   [Read in Data](#read-in-data)
-    -   [Exploratory Data Anaysis](#exploratory-data-anaysis)
-
-# `lifestyle` Analysis
+-   [Intro](#intro)
+-   [Requirements](#requirements)
+-   [Read in Data](#read-in-data)
+-   [Exploratory Data Anaysis](#exploratory-data-anaysis)
 
 ## Intro
 
@@ -48,12 +43,6 @@ dim(df)
 ```
 
     ## [1] 2099   55
-
-``` r
-print(params$channel)
-```
-
-    ## [1] "lifestyle"
 
 ## Exploratory Data Anaysis
 

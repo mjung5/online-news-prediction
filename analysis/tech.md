@@ -1,15 +1,10 @@
-analysis_template
+Tech
 ================
-David Shaw
-10/21/2021
 
--   [`tech` Analysis](#tech-analysis)
-    -   [Intro](#intro)
-    -   [Requirements](#requirements)
-    -   [Read in Data](#read-in-data)
-    -   [Exploratory Data Anaysis](#exploratory-data-anaysis)
-
-# `tech` Analysis
+-   [Intro](#intro)
+-   [Requirements](#requirements)
+-   [Read in Data](#read-in-data)
+-   [Exploratory Data Anaysis](#exploratory-data-anaysis)
 
 ## Intro
 
@@ -48,12 +43,6 @@ dim(df)
 ```
 
     ## [1] 7346   55
-
-``` r
-print(params$channel)
-```
-
-    ## [1] "tech"
 
 ## Exploratory Data Anaysis
 

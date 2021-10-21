@@ -1,15 +1,10 @@
-analysis_template
+Entertainment
 ================
-David Shaw
-10/21/2021
 
--   [`entertainment` Analysis](#entertainment-analysis)
-    -   [Intro](#intro)
-    -   [Requirements](#requirements)
-    -   [Read in Data](#read-in-data)
-    -   [Exploratory Data Anaysis](#exploratory-data-anaysis)
-
-# `entertainment` Analysis
+-   [Intro](#intro)
+-   [Requirements](#requirements)
+-   [Read in Data](#read-in-data)
+-   [Exploratory Data Anaysis](#exploratory-data-anaysis)
 
 ## Intro
 
@@ -48,12 +43,6 @@ dim(df)
 ```
 
     ## [1] 7057   55
-
-``` r
-print(params$channel)
-```
-
-    ## [1] "entertainment"
 
 ## Exploratory Data Anaysis
 

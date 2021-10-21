@@ -1,15 +1,10 @@
-analysis_template
+Bus
 ================
-David Shaw
-10/21/2021
 
--   [`bus` Analysis](#bus-analysis)
-    -   [Intro](#intro)
-    -   [Requirements](#requirements)
-    -   [Read in Data](#read-in-data)
-    -   [Exploratory Data Anaysis](#exploratory-data-anaysis)
-
-# `bus` Analysis
+-   [Intro](#intro)
+-   [Requirements](#requirements)
+-   [Read in Data](#read-in-data)
+-   [Exploratory Data Anaysis](#exploratory-data-anaysis)
 
 ## Intro
 
@@ -48,12 +43,6 @@ dim(df)
 ```
 
     ## [1] 6258   55
-
-``` r
-print(params$channel)
-```
-
-    ## [1] "bus"
 
 ## Exploratory Data Anaysis
 

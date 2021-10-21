@@ -1,15 +1,10 @@
-analysis_template
+Socmed
 ================
-David Shaw
-10/21/2021
 
--   [`socmed` Analysis](#socmed-analysis)
-    -   [Intro](#intro)
-    -   [Requirements](#requirements)
-    -   [Read in Data](#read-in-data)
-    -   [Exploratory Data Anaysis](#exploratory-data-anaysis)
-
-# `socmed` Analysis
+-   [Intro](#intro)
+-   [Requirements](#requirements)
+-   [Read in Data](#read-in-data)
+-   [Exploratory Data Anaysis](#exploratory-data-anaysis)
 
 ## Intro
 
@@ -48,12 +43,6 @@ dim(df)
 ```
 
     ## [1] 2323   55
-
-``` r
-print(params$channel)
-```
-
-    ## [1] "socmed"
 
 ## Exploratory Data Anaysis
 

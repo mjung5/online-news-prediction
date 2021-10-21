@@ -1,13 +1,11 @@
 ---
-title: "analysis_template"
-author: "David Shaw"
-date: "10/21/2021"
 output: 
   github_document:
     toc: true
     html_preview: false
 params: 
     channel: channel
+title: "`r str_to_title(params$channel)`"
 ---
 
 ```{r setup, include=FALSE}
@@ -16,7 +14,6 @@ knitr::opts_chunk$set(echo = TRUE)
 # import libraries up here so we don't print out any warnings that make our document messy
 library(tidyverse)
 ```
-# ``r params$channel`` Analysis
 ## Intro
 placeholder
 
@@ -35,7 +32,6 @@ df <- read_csv('data/OnlineNewsPopularity.csv') %>%
           select(-contains('data_channel_is'))
 
 dim(df)
-print(params$channel)
 ```
 
 ## Exploratory Data Anaysis
