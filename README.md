@@ -8,7 +8,11 @@ placeholder
 placeholder
 
 ## Analysis
+* [Business](analysis/bus.md)
+* [Entertainment](analysis/entertainment.md)
+* [Lifestyle](analysis/lifestyle.md)
 * [Tech](analysis/tech.md)
+* [World](analysis/world.md)
 
 ## Render Code
 placeholder
