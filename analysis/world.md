@@ -67,7 +67,7 @@ g1
 
     ## Warning: Removed 254 rows containing missing values (geom_point).
 
-![](/Users/williamshaw/Projects/ST558/online-news-prediction/analysis/world_files/figure-gfm/1_eda-1.png)<!-- -->
+![](world_files/figure-gfm/1_eda-1.png)<!-- -->
 
 ``` r
 # histogram for day of week vs shares
@@ -89,4 +89,4 @@ g2 <- df %>% ggplot(aes(x=weekday, y=shares)) +
 g2
 ```
 
-![](/Users/williamshaw/Projects/ST558/online-news-prediction/analysis/world_files/figure-gfm/2_eda-1.png)<!-- -->
+![](world_files/figure-gfm/2_eda-1.png)<!-- -->

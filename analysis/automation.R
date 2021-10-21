@@ -6,14 +6,14 @@ channel_list <- list('lifestyle',
                      'tech',
                      'world')
 
-#channel_list <- list('bus')
+# a shortened list of channels so we can test rendering
+channel_list <- list('bus')
 
 # render analysis for each channel
 for (channel in channel_list) {
   rmarkdown::render(
-    'analysis_template.rmd', 
+    'analysis/analysis_template.Rmd', 
     output_file = paste0(channel, '.md'),
-    output_dir = 'analysis',
     params = list(channel=channel)
   )
 }
