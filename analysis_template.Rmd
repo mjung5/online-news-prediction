@@ -1,63 +1,45 @@
-analysis_template
-================
-David Shaw
-10/21/2021
+---
+title: "analysis_template"
+author: "David Shaw"
+date: "10/21/2021"
+output: 
+  github_document:
+    toc: true
+    html_preview: false
+params: 
+    channel: channel
+---
 
--   [`tech` Analysis](#tech-analysis)
-    -   [Intro](#intro)
-    -   [Requirements](#requirements)
-    -   [Read in Data](#read-in-data)
-    -   [Exploratory Data Anaysis](#exploratory-data-anaysis)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 
-# `tech` Analysis
-
+# import libraries up here so we don't print out any warnings that make our document messy
+library(tidyverse)
+```
+# ``r params$channel`` Analysis
 ## Intro
-
 placeholder
 
 ## Requirements
-
-``` r
+```{r 0_requirements, eval=FALSE}
 library(tidyverse)
 ```
 
 ## Read in Data
-
-``` r
+```{r 1_readData}
 # read entire dataset
   # subset to get the data channel we want
     # remove unnessary columns
 df <- read_csv('data/OnlineNewsPopularity.csv') %>%
         filter((!!sym(paste0('data_channel_is_', params$channel))) == 1) %>%
           select(-contains('data_channel_is'))
-```
 
-    ## Rows: 39644 Columns: 61
-
-    ## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (1): url
-    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_unique_tokens, nu...
-
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 dim(df)
-```
-
-    ## [1] 7346   55
-
-``` r
 print(params$channel)
 ```
 
-    ## [1] "tech"
-
 ## Exploratory Data Anaysis
-
-``` r
+```{r 1_eda}
 # simple scatter plot
 g1 <- df %>% ggplot(aes(x=num_hrefs, y=shares)) +
         geom_point(size=2, shape=23) +
@@ -65,11 +47,8 @@ g1 <- df %>% ggplot(aes(x=num_hrefs, y=shares)) +
 g1
 ```
 
-    ## Warning: Removed 307 rows containing missing values (geom_point).
 
-![](/Users/williamshaw/Projects/ST558/online-news-prediction/analysis/tech_files/figure-gfm/1_eda-1.png)<!-- -->
-
-``` r
+```{r 2_eda}
 # histogram for day of week vs shares
 # first create a variable that holds day of week
 levels = c('Sunday', 'Monday', 'Tuesday', 'Wednesday','Thursday', 'Friday', 'Saturday')
@@ -89,4 +68,8 @@ g2 <- df %>% ggplot(aes(x=weekday, y=shares)) +
 g2
 ```
 
-![](/Users/williamshaw/Projects/ST558/online-news-prediction/analysis/tech_files/figure-gfm/2_eda-1.png)<!-- -->
+
+
+
+
+

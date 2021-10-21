@@ -3,13 +3,13 @@ analysis_template
 David Shaw
 10/21/2021
 
--   [`tech` Analysis](#tech-analysis)
+-   [`lifestyle` Analysis](#lifestyle-analysis)
     -   [Intro](#intro)
     -   [Requirements](#requirements)
     -   [Read in Data](#read-in-data)
     -   [Exploratory Data Anaysis](#exploratory-data-anaysis)
 
-# `tech` Analysis
+# `lifestyle` Analysis
 
 ## Intro
 
@@ -47,13 +47,13 @@ df <- read_csv('data/OnlineNewsPopularity.csv') %>%
 dim(df)
 ```
 
-    ## [1] 7346   55
+    ## [1] 2099   55
 
 ``` r
 print(params$channel)
 ```
 
-    ## [1] "tech"
+    ## [1] "lifestyle"
 
 ## Exploratory Data Anaysis
 
@@ -65,9 +65,9 @@ g1 <- df %>% ggplot(aes(x=num_hrefs, y=shares)) +
 g1
 ```
 
-    ## Warning: Removed 307 rows containing missing values (geom_point).
+    ## Warning: Removed 141 rows containing missing values (geom_point).
 
-![](/Users/williamshaw/Projects/ST558/online-news-prediction/analysis/tech_files/figure-gfm/1_eda-1.png)<!-- -->
+![](/Users/williamshaw/Projects/ST558/online-news-prediction/analysis/lifestyle_files/figure-gfm/1_eda-1.png)<!-- -->
 
 ``` r
 # histogram for day of week vs shares
@@ -89,4 +89,4 @@ g2 <- df %>% ggplot(aes(x=weekday, y=shares)) +
 g2
 ```
 
-![](/Users/williamshaw/Projects/ST558/online-news-prediction/analysis/tech_files/figure-gfm/2_eda-1.png)<!-- -->
+![](/Users/williamshaw/Projects/ST558/online-news-prediction/analysis/lifestyle_files/figure-gfm/2_eda-1.png)<!-- -->
