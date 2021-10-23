@@ -91,10 +91,11 @@ The summary statistics of targeted variable (shares)
 share_stat <- df %>% 
                 summarise(Count = n(),
                           Min = min(shares), 
+                          Q1 = quantile(shares, 0.25),
                           Median = median(shares),
                           Average = mean(shares),
+                          Q3 = quantile(shares, 0.75),
                           Max = max(shares),
-                          IQR = IQR(shares),
                           Std.Dev = sd(shares)
                           )
 
@@ -102,7 +103,9 @@ share_stat <- df %>%
 knitr::kable(share_stat, caption = "Summary Stats by shares", digits = 2)
 
 ```
-### Shares by week of day
+
+### Shares by days of week
+
 ```{r}
 df %>%
   group_by(weekday) %>%
@@ -111,10 +114,27 @@ df %>%
 
 ```
 
+### shares by popularity
+
 ```{r}
 df %>% 
   group_by(Popularity) %>%
-  summarise(total_shares = sum(shares), avg_shares = round(mean(shares)), max_shares = max(shares))
+  summarise(total_shares = sum(shares), avg_shares = round(mean(shares)), max_shares = max(shares)) %>%
+  knitr::kable()
+```
+
+### count of news by popularity over different days of week
+
+```{r}
+#Bar plot of weekday by popularity 
+
+ggplot(data = df, aes(x = weekday)) +
+  geom_bar(aes(fill = as.factor(Popularity))) + 
+  labs(x = "Days of week", 
+       title = "Days of week by popularity") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  scale_fill_discrete(name = "Popularity") 
+            
 ```
 
 ### Number of links
@@ -133,8 +153,8 @@ g1
 # histogram for day of week vs shares
 
 g2 <- df %>% ggplot(aes(x=weekday, y=shares)) +
-        geom_bar(stat="identity") + 
-        theme(axis.text.x = element_text(angle = 45, vjust = .75)) +
+        geom_bar(stat="identity", fill = "darkblue") + 
+   theme(axis.text.x = element_text(angle = 45, vjust = .75)) +
         ggtitle('Day of Week and Total Number of Shares')
 g2
 ```
@@ -147,8 +167,7 @@ g3 <- ggplot(data = df, aes(x =  n_tokens_title,
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-      ggtitle("Word count in the title") + 
-     geom_smooth(method = lm, color = "blue")  
+      ggtitle("Word count in the title")  
 g3
 
 #scatter plots of Number of words in the content
@@ -156,8 +175,7 @@ g4 <- ggplot(data = df, aes(x =  n_tokens_content,
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-      ggtitle("Word count in the content") + 
-      geom_smooth(method = lm, color = "blue")  
+      ggtitle("Word count in the content")   
 g4
 ```
 
@@ -168,7 +186,11 @@ g4
 knitr::kable(round(cor(df[ , c(3:4, 10:11)]), 2))
 
 ```
+```{r}
+library(corrplot)
+corrplot(cor(df[c(3:4, 10:11, 13, 43:44)]))
 
+```
 
 
 

@@ -7,7 +7,10 @@ Entertainment
     -   [Read in Data](#read-in-data)
 -   [Summarizations](#summarizations)
     -   [Exploratory Data Anaysis](#exploratory-data-anaysis)
-    -   [Shares by week of day](#shares-by-week-of-day)
+    -   [Shares by days of week](#shares-by-days-of-week)
+    -   [shares by popularity](#shares-by-popularity)
+    -   [count of news by popularity over different days of
+        week](#count-of-news-by-popularity-over-different-days-of-week)
     -   [Number of links](#number-of-links)
     -   [Days of week](#days-of-week)
     -   [Number of words in the title and
@@ -111,10 +114,11 @@ The summary statistics of targeted variable (shares)
 share_stat <- df %>% 
                 summarise(Count = n(),
                           Min = min(shares), 
+                          Q1 = quantile(shares, 0.25),
                           Median = median(shares),
                           Average = mean(shares),
+                          Q3 = quantile(shares, 0.75),
                           Max = max(shares),
-                          IQR = IQR(shares),
                           Std.Dev = sd(shares)
                           )
 
@@ -122,13 +126,13 @@ share_stat <- df %>%
 knitr::kable(share_stat, caption = "Summary Stats by shares", digits = 2)
 ```
 
-| Count | Min | Median | Average |    Max |  IQR | Std.Dev |
-|------:|----:|-------:|--------:|-------:|-----:|--------:|
-|  7057 |  47 |   1200 | 2970.49 | 210300 | 1267 | 7858.13 |
+| Count | Min |  Q1 | Median | Average |   Q3 |    Max | Std.Dev |
+|------:|----:|----:|-------:|--------:|-----:|-------:|--------:|
+|  7057 |  47 | 833 |   1200 | 2970.49 | 2100 | 210300 | 7858.13 |
 
 Summary Stats by shares
 
-### Shares by week of day
+### Shares by days of week
 
 ``` r
 df %>%
@@ -147,19 +151,36 @@ df %>%
 | Friday    |       2916920 |        3001 |      210300 |
 | Saturday  |       1298232 |        3416 |       68300 |
 
+### shares by popularity
+
 ``` r
 df %>% 
   group_by(Popularity) %>%
-  summarise(total_shares = sum(shares), avg_shares = round(mean(shares)), max_shares = max(shares))
+  summarise(total_shares = sum(shares), avg_shares = round(mean(shares)), max_shares = max(shares)) %>%
+  knitr::kable()
 ```
 
-    ## # A tibble: 4 x 4
-    ##   Popularity         total_shares avg_shares max_shares
-    ##   <ord>                     <dbl>      <dbl>      <dbl>
-    ## 1 Not at all popular      1770774        715        946
-    ## 2 Not too popular         2246354       1160       1400
-    ## 3 Somewhat popular        2578000       1965       2800
-    ## 4 Very popular           14367599      10786     210300
+| Popularity         | total\_shares | avg\_shares | max\_shares |
+|:-------------------|--------------:|------------:|------------:|
+| Not at all popular |       1770774 |         715 |         946 |
+| Not too popular    |       2246354 |        1160 |        1400 |
+| Somewhat popular   |       2578000 |        1965 |        2800 |
+| Very popular       |      14367599 |       10786 |      210300 |
+
+### count of news by popularity over different days of week
+
+``` r
+#Bar plot of weekday by popularity 
+
+ggplot(data = df, aes(x = weekday)) +
+  geom_bar(aes(fill = as.factor(Popularity))) + 
+  labs(x = "Days of week", 
+       title = "Days of week by popularity") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  scale_fill_discrete(name = "Popularity") 
+```
+
+![](entertainment_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ### Number of links
 
@@ -181,8 +202,8 @@ g1
 # histogram for day of week vs shares
 
 g2 <- df %>% ggplot(aes(x=weekday, y=shares)) +
-        geom_bar(stat="identity") + 
-        theme(axis.text.x = element_text(angle = 45, vjust = .75)) +
+        geom_bar(stat="identity", fill = "darkblue") + 
+   theme(axis.text.x = element_text(angle = 45, vjust = .75)) +
         ggtitle('Day of Week and Total Number of Shares')
 g2
 ```
@@ -197,14 +218,11 @@ g3 <- ggplot(data = df, aes(x =  n_tokens_title,
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-      ggtitle("Word count in the title") + 
-     geom_smooth(method = lm, color = "blue")  
+      ggtitle("Word count in the title")  
 g3
 ```
 
-    ## `geom_smooth()` using formula 'y ~ x'
-
-![](entertainment_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](entertainment_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 ``` r
 #scatter plots of Number of words in the content
@@ -212,14 +230,11 @@ g4 <- ggplot(data = df, aes(x =  n_tokens_content,
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-      ggtitle("Word count in the content") + 
-      geom_smooth(method = lm, color = "blue")  
+      ggtitle("Word count in the content")   
 g4
 ```
 
-    ## `geom_smooth()` using formula 'y ~ x'
-
-![](entertainment_files/figure-gfm/unnamed-chunk-5-2.png)<!-- -->
+![](entertainment_files/figure-gfm/unnamed-chunk-6-2.png)<!-- -->
 
 ### Correlation with numeric variables
 
@@ -233,3 +248,10 @@ knitr::kable(round(cor(df[ , c(3:4, 10:11)]), 2))
 | n\_tokens\_content |             0.04 |               1.00 |      0.46 |        0.23 |
 | num\_imgs          |             0.02 |               0.46 |      1.00 |       -0.10 |
 | num\_videos        |             0.06 |               0.23 |     -0.10 |        1.00 |
+
+``` r
+library(corrplot)
+corrplot(cor(df[c(3:4, 10:11, 13, 43:44)]))
+```
+
+![](entertainment_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
