@@ -22,7 +22,9 @@ placeholder
 library(tidyverse)
 ```
 
-## Read in Data
+## Data manipulaton
+
+### Read in Data
 ```{r 1_readData}
 # read entire dataset
   # subset to get the data channel we want
@@ -34,19 +36,8 @@ df <- read_csv('data/OnlineNewsPopularity.csv') %>%
 dim(df)
 ```
 
-## Exploratory Data Anaysis
-```{r 1_eda}
-# simple scatter plot
-g1 <- df %>% ggplot(aes(x=num_hrefs, y=shares)) +
-        geom_point(size=2, shape=23) +
-        ylim(0, 10000)
-g1
-```
-
-
-```{r 2_eda}
-# histogram for day of week vs shares
-# first create a variable that holds day of week
+```{r}
+# Create a variable that holds day of week
 levels = c('Sunday', 'Monday', 'Tuesday', 'Wednesday','Thursday', 'Friday', 'Saturday')
 df <- df %>% mutate(weekday = ifelse(weekday_is_monday==1, 'Monday', 
                                 ifelse(weekday_is_tuesday==1, 'Tuesday',
@@ -57,6 +48,90 @@ df <- df %>% mutate(weekday = ifelse(weekday_is_monday==1, 'Monday',
                                        ))))))) %>%
                 mutate(weekday = factor(weekday, levels = levels))
 
+
+# function to create the popularity column. 
+# popularity rating was created with summary stat info (25%, median, and 75%)
+popularityCol <- function(dataset){
+  dataset <- dataset %>% 
+    mutate("Popularity" = if_else(shares > 2800, "Very popular",
+                           if_else(shares > 1400, "Somewhat popular", 
+                            if_else(shares > 946, "Not too popular", "Not at all popular")) 
+                           )
+    )            
+  return(dataset)
+}
+
+# Data set using popularityCol function.
+df <- popularityCol(df) %>% as_tibble()
+
+# Overwrite popularity column with factor version
+df$Popularity <- as.factor(df$Popularity)
+
+# Use ordered function on a factor to order the levels
+df$Popularity <- ordered(df$Popularity, levels = c("Not at all popular", "Not too popular", "Somewhat popular", "Very popular"))
+
+
+#Channel <- params$channel
+
+#df <- filter(df, channel)
+
+#split data intro train and test sets
+#train_rows <- sample(nrow(df), 0.7*nrow(df))
+#trainData <- df[train_rows,] %>%
+#testData <- df[-train_rows,] 
+```
+## Summarizations
+
+### Exploratory Data Anaysis
+
+The summary statistics of targeted variable (shares)
+
+```{r}
+# summary statistics
+share_stat <- df %>% 
+                summarise(Count = n(),
+                          Min = min(shares), 
+                          Median = median(shares),
+                          Average = mean(shares),
+                          Max = max(shares),
+                          IQR = IQR(shares),
+                          Std.Dev = sd(shares)
+                          )
+
+# Display a table of the summary stats.
+knitr::kable(share_stat, caption = "Summary Stats by shares", digits = 2)
+
+```
+### Shares by week of day
+```{r}
+df %>%
+  group_by(weekday) %>%
+  summarise(total_shares = sum(shares), avg_shares = round(mean(shares)), max_shares = max(shares)) %>%
+  knitr::kable()
+
+```
+
+```{r}
+df %>% 
+  group_by(Popularity) %>%
+  summarise(total_shares = sum(shares), avg_shares = round(mean(shares)), max_shares = max(shares))
+```
+
+### Number of links
+
+```{r 1_eda}
+# simple scatter plot
+g1 <- df %>% ggplot(aes(x=num_hrefs, y=shares)) +
+        geom_point(size=2, shape=23) +
+        ylim(0, 10000)
+g1
+```
+
+### Days of week
+
+```{r 2_eda}
+# histogram for day of week vs shares
+
 g2 <- df %>% ggplot(aes(x=weekday, y=shares)) +
         geom_bar(stat="identity") + 
         theme(axis.text.x = element_text(angle = 45, vjust = .75)) +
@@ -64,7 +139,35 @@ g2 <- df %>% ggplot(aes(x=weekday, y=shares)) +
 g2
 ```
 
+### Number of words in the title and content
 
+```{r}
+#scatter plots of Number of words in the title
+g3 <- ggplot(data = df, aes(x =  n_tokens_title, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) + 
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Word count in the title") + 
+     geom_smooth(method = lm, color = "blue")  
+g3
+
+#scatter plots of Number of words in the content
+g4 <- ggplot(data = df, aes(x =  n_tokens_content, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) + 
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Word count in the content") + 
+      geom_smooth(method = lm, color = "blue")  
+g4
+```
+
+
+### Correlation with numeric variables
+
+```{r}
+knitr::kable(round(cor(df[ , c(3:4, 10:11)]), 2))
+
+```
 
 
 
