@@ -84,16 +84,12 @@ df$Popularity <- as.factor(df$Popularity)
 # Use ordered function on a factor to order the levels
 df$Popularity <- ordered(df$Popularity, levels = c("Not at all popular", "Not too popular", "Somewhat popular", "Very popular"))
 
-
-#Channel <- params$channel
-
-#df <- filter(df, channel)
-
-#split data intro train and test sets
-#train_rows <- sample(nrow(df), 0.7*nrow(df))
-#trainData <- df[train_rows,] %>%
-#testData <- df[-train_rows,] 
+# split data into train and test sets
+train_rows <- sample(nrow(df), 0.7*nrow(df))
+trainData <- df[train_rows,]
+testData <- df[-train_rows,] 
 ```
+
 ## Summarizations
 
 ### Exploratory Data Anaysis
@@ -242,3 +238,8 @@ corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
 
 Above shows the correlation matrix for other numerical variables. Shares is the bottom row. We use this plot to find other variables that might have weak correlation with shares and make sure to include these in our model building phase.
 
+## Modeling
+
+```{r}
+
+```

@@ -17,6 +17,7 @@ Lifestyle
         content](#number-of-words-in-the-title-and-content)
     -   [Correlation with numeric
         variables](#correlation-with-numeric-variables)
+-   [Modeling](#modeling)
 
 ## Intro
 
@@ -63,14 +64,14 @@ df <- read_csv('data/OnlineNewsPopularity.csv') %>%
 
     ## Rows: 39644 Columns: 61
 
-    ## ── Column specification ──────────────────────────────────────────────────────────────────────────────────
+    ## -- Column specification -------------------------------------------------------------------------------------------
     ## Delimiter: ","
     ## chr  (1): url
-    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_u...
+    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_unique_tok...
 
     ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+    ## i Use `spec()` to retrieve the full column specification for this data.
+    ## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 ``` r
 dim(df)
@@ -116,15 +117,10 @@ df$Popularity <- as.factor(df$Popularity)
 # Use ordered function on a factor to order the levels
 df$Popularity <- ordered(df$Popularity, levels = c("Not at all popular", "Not too popular", "Somewhat popular", "Very popular"))
 
-
-#Channel <- params$channel
-
-#df <- filter(df, channel)
-
-#split data intro train and test sets
-#train_rows <- sample(nrow(df), 0.7*nrow(df))
-#trainData <- df[train_rows,] %>%
-#testData <- df[-train_rows,] 
+# split data into train and test sets
+train_rows <- sample(nrow(df), 0.7*nrow(df))
+trainData <- df[train_rows,]
+testData <- df[-train_rows,] 
 ```
 
 ## Summarizations
@@ -165,15 +161,15 @@ df %>%
   knitr::kable()
 ```
 
-| weekday   | total_shares | avg_shares | max_shares |
-|:----------|-------------:|-----------:|-----------:|
-| Sunday    |       795979 |       3790 |      33100 |
-| Monday    |      1399319 |       4346 |     196700 |
-| Tuesday   |      1386933 |       4152 |     208300 |
-| Wednesday |      1231194 |       3173 |      73100 |
-| Thursday  |      1253096 |       3500 |      56000 |
-| Friday    |       922890 |       3026 |      40400 |
-| Saturday  |       739366 |       4062 |      43000 |
+| weekday   | total\_shares | avg\_shares | max\_shares |
+|:----------|--------------:|------------:|------------:|
+| Sunday    |        795979 |        3790 |       33100 |
+| Monday    |       1399319 |        4346 |      196700 |
+| Tuesday   |       1386933 |        4152 |      208300 |
+| Wednesday |       1231194 |        3173 |       73100 |
+| Thursday  |       1253096 |        3500 |       56000 |
+| Friday    |        922890 |        3026 |       40400 |
+| Saturday  |        739366 |        4062 |       43000 |
 
 The above table shows a breakdown of total, average, and maximum number
 of shares for articles published on a specific weekday for this channel.
@@ -188,12 +184,12 @@ df %>%
   knitr::kable()
 ```
 
-| Popularity         | total_shares | avg_shares | max_shares |
-|:-------------------|-------------:|-----------:|-----------:|
-| Not at all popular |       265793 |        699 |        945 |
-| Not too popular    |       620086 |       1195 |       1400 |
-| Somewhat popular   |      1187200 |       2002 |       2800 |
-| Very popular       |      5655698 |       9317 |     208300 |
+| Popularity         | total\_shares | avg\_shares | max\_shares |
+|:-------------------|--------------:|------------:|------------:|
+| Not at all popular |        265793 |         699 |         945 |
+| Not too popular    |        620086 |        1195 |        1400 |
+| Somewhat popular   |       1187200 |        2002 |        2800 |
+| Very popular       |       5655698 |        9317 |      208300 |
 
 The above table show a summary of the newly created `popularity`
 variable.
@@ -211,7 +207,7 @@ ggplot(data = df, aes(x = weekday)) +
   scale_fill_discrete(name = "Popularity") 
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-52-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 The bar plot above shows a breakdown of the number of articles published
 vs day of week. We can also see a breakdown of the proportion of
@@ -271,7 +267,7 @@ g3 <- ggplot(data = df, aes(x =  n_tokens_title,
 g3
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-53-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 Above shows the number of words in the title compared to the number of
 shares. Perhaps a quadratic relationship is appropriate for this
@@ -287,7 +283,7 @@ g4 <- ggplot(data = df, aes(x =  n_tokens_content,
 g4
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-54-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 Above shows a comparison of the number of words that appear in the
 article compared to the number of shares. Perhaps a negative linear
@@ -300,12 +296,12 @@ slops.
 knitr::kable(round(cor(df[ , c(3:4, 10:11)]), 2))
 ```
 
-|                  | n_tokens_title | n_tokens_content | num_imgs | num_videos |
-|:-----------------|---------------:|-----------------:|---------:|-----------:|
-| n_tokens_title   |           1.00 |             0.01 |    -0.02 |       0.01 |
-| n_tokens_content |           0.01 |             1.00 |     0.46 |       0.04 |
-| num_imgs         |          -0.02 |             0.46 |     1.00 |      -0.06 |
-| num_videos       |           0.01 |             0.04 |    -0.06 |       1.00 |
+|                    | n\_tokens\_title | n\_tokens\_content | num\_imgs | num\_videos |
+|:-------------------|-----------------:|-------------------:|----------:|------------:|
+| n\_tokens\_title   |             1.00 |               0.01 |     -0.02 |        0.01 |
+| n\_tokens\_content |             0.01 |               1.00 |      0.46 |        0.04 |
+| num\_imgs          |            -0.02 |               0.46 |      1.00 |       -0.06 |
+| num\_videos        |             0.01 |               0.04 |     -0.06 |        1.00 |
 
 ``` r
 df_tmp <- df %>% select(c('n_tokens_title', 
@@ -326,9 +322,11 @@ df_tmp <- df %>% select(c('n_tokens_title',
 corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-56-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 Above shows the correlation matrix for other numerical variables. Shares
 is the bottom row. We use this plot to find other variables that might
 have weak correlation with shares and make sure to include these in our
 model building phase.
+
+## Modeling

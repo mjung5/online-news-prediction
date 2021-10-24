@@ -17,6 +17,7 @@ World
         content](#number-of-words-in-the-title-and-content)
     -   [Correlation with numeric
         variables](#correlation-with-numeric-variables)
+-   [Modeling](#modeling)
 
 ## Intro
 
@@ -63,14 +64,14 @@ df <- read_csv('data/OnlineNewsPopularity.csv') %>%
 
     ## Rows: 39644 Columns: 61
 
-    ## ── Column specification ──────────────────────────────────────────────────────────────────────────────────
+    ## -- Column specification -------------------------------------------------------------------------------------------
     ## Delimiter: ","
     ## chr  (1): url
-    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_u...
+    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_unique_tok...
 
     ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+    ## i Use `spec()` to retrieve the full column specification for this data.
+    ## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 ``` r
 dim(df)
@@ -116,15 +117,10 @@ df$Popularity <- as.factor(df$Popularity)
 # Use ordered function on a factor to order the levels
 df$Popularity <- ordered(df$Popularity, levels = c("Not at all popular", "Not too popular", "Somewhat popular", "Very popular"))
 
-
-#Channel <- params$channel
-
-#df <- filter(df, channel)
-
-#split data intro train and test sets
-#train_rows <- sample(nrow(df), 0.7*nrow(df))
-#trainData <- df[train_rows,] %>%
-#testData <- df[-train_rows,] 
+# split data into train and test sets
+train_rows <- sample(nrow(df), 0.7*nrow(df))
+trainData <- df[train_rows,]
+testData <- df[-train_rows,] 
 ```
 
 ## Summarizations
@@ -165,15 +161,15 @@ df %>%
   knitr::kable()
 ```
 
-| weekday   | total_shares | avg_shares | max_shares |
-|:----------|-------------:|-----------:|-----------:|
-| Sunday    |      1477309 |       2605 |      55600 |
-| Monday    |      3330409 |       2456 |     141400 |
-| Tuesday   |      3432328 |       2220 |     115700 |
-| Wednesday |      2941868 |       1880 |      53500 |
-| Thursday  |      3756199 |       2394 |     284700 |
-| Friday    |      2908077 |       2228 |     128500 |
-| Saturday  |      1432545 |       2760 |      75500 |
+| weekday   | total\_shares | avg\_shares | max\_shares |
+|:----------|--------------:|------------:|------------:|
+| Sunday    |       1477309 |        2605 |       55600 |
+| Monday    |       3330409 |        2456 |      141400 |
+| Tuesday   |       3432328 |        2220 |      115700 |
+| Wednesday |       2941868 |        1880 |       53500 |
+| Thursday  |       3756199 |        2394 |      284700 |
+| Friday    |       2908077 |        2228 |      128500 |
+| Saturday  |       1432545 |        2760 |       75500 |
 
 The above table shows a breakdown of total, average, and maximum number
 of shares for articles published on a specific weekday for this channel.
@@ -188,12 +184,12 @@ df %>%
   knitr::kable()
 ```
 
-| Popularity         | total_shares | avg_shares | max_shares |
-|:-------------------|-------------:|-----------:|-----------:|
-| Not at all popular |      2162892 |        712 |        946 |
-| Not too popular    |      2841343 |       1157 |       1400 |
-| Somewhat popular   |      3341600 |       1958 |       2800 |
-| Very popular       |     10932900 |       8896 |     284700 |
+| Popularity         | total\_shares | avg\_shares | max\_shares |
+|:-------------------|--------------:|------------:|------------:|
+| Not at all popular |       2162892 |         712 |         946 |
+| Not too popular    |       2841343 |        1157 |        1400 |
+| Somewhat popular   |       3341600 |        1958 |        2800 |
+| Very popular       |      10932900 |        8896 |      284700 |
 
 The above table show a summary of the newly created `popularity`
 variable.
@@ -300,12 +296,12 @@ slops.
 knitr::kable(round(cor(df[ , c(3:4, 10:11)]), 2))
 ```
 
-|                  | n_tokens_title | n_tokens_content | num_imgs | num_videos |
-|:-----------------|---------------:|-----------------:|---------:|-----------:|
-| n_tokens_title   |           1.00 |             0.05 |    -0.01 |       0.03 |
-| n_tokens_content |           0.05 |             1.00 |     0.24 |       0.06 |
-| num_imgs         |          -0.01 |             0.24 |     1.00 |      -0.03 |
-| num_videos       |           0.03 |             0.06 |    -0.03 |       1.00 |
+|                    | n\_tokens\_title | n\_tokens\_content | num\_imgs | num\_videos |
+|:-------------------|-----------------:|-------------------:|----------:|------------:|
+| n\_tokens\_title   |             1.00 |               0.05 |     -0.01 |        0.03 |
+| n\_tokens\_content |             0.05 |               1.00 |      0.24 |        0.06 |
+| num\_imgs          |            -0.01 |               0.24 |      1.00 |       -0.03 |
+| num\_videos        |             0.03 |               0.06 |     -0.03 |        1.00 |
 
 ``` r
 df_tmp <- df %>% select(c('n_tokens_title', 
@@ -332,3 +328,5 @@ Above shows the correlation matrix for other numerical variables. Shares
 is the bottom row. We use this plot to find other variables that might
 have weak correlation with shares and make sure to include these in our
 model building phase.
+
+## Modeling
