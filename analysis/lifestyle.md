@@ -64,10 +64,10 @@ df <- read_csv('data/OnlineNewsPopularity.csv') %>%
 
     ## Rows: 39644 Columns: 61
 
-    ## -- Column specification -------------------------------------------------------------------------------------------
+    ## -- Column specification ---------------------------------------------------------------------------------------------------------------------------------------
     ## Delimiter: ","
     ## chr  (1): url
-    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_unique_tok...
+    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_unique_tokens, num_hrefs, num_self_hrefs, num_imgs, nu...
 
     ## 
     ## i Use `spec()` to retrieve the full column specification for this data.
@@ -116,9 +116,14 @@ df$Popularity <- as.factor(df$Popularity)
 
 # Use ordered function on a factor to order the levels
 df$Popularity <- ordered(df$Popularity, levels = c("Not at all popular", "Not too popular", "Somewhat popular", "Very popular"))
+```
 
+We now split the data into train and test sets for predicitve modeling.
+
+``` r
+set.seed(123)
 # split data into train and test sets
-train_rows <- sample(nrow(df), 0.7*nrow(df))
+train_rows <- sample(nrow(df), nrow(df)*0.7)
 trainData <- df[train_rows,]
 testData <- df[-train_rows,] 
 ```
@@ -207,7 +212,7 @@ ggplot(data = df, aes(x = weekday)) +
   scale_fill_discrete(name = "Popularity") 
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 The bar plot above shows a breakdown of the number of articles published
 vs day of week. We can also see a breakdown of the proportion of
@@ -267,7 +272,7 @@ g3 <- ggplot(data = df, aes(x =  n_tokens_title,
 g3
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 Above shows the number of words in the title compared to the number of
 shares. Perhaps a quadratic relationship is appropriate for this
@@ -283,7 +288,7 @@ g4 <- ggplot(data = df, aes(x =  n_tokens_content,
 g4
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 Above shows a comparison of the number of words that appear in the
 article compared to the number of shares. Perhaps a negative linear
@@ -322,7 +327,7 @@ df_tmp <- df %>% select(c('n_tokens_title',
 corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 Above shows the correlation matrix for other numerical variables. Shares
 is the bottom row. We use this plot to find other variables that might

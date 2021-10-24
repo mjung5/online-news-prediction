@@ -14,7 +14,10 @@ knitr::opts_chunk$set(echo = TRUE)
 # import libraries up here so we don't print out any warnings that make our document messy
 library(tidyverse)
 library(corrplot)
+library(caret)
+library(gbm)
 ```
+
 ## Intro
 This project aims at building predictive models on the [Online News Popularity](https://archive.ics.uci.edu/ml/datasets/Online+News+Popularity#) dataset. Our goal is to build models that predict the number of shares an article receives based on characteristics of the article. This work is important to help writers/companies understand factors that influence article success (as measured by the number of shares an article obtains). This work could also be integrated in the calculation of advertisement space on articles (articles that receive more shares should demand more for ad space). 
 
@@ -84,8 +87,14 @@ df$Popularity <- as.factor(df$Popularity)
 # Use ordered function on a factor to order the levels
 df$Popularity <- ordered(df$Popularity, levels = c("Not at all popular", "Not too popular", "Somewhat popular", "Very popular"))
 
+```
+
+We now split the data into train and test sets for predicitve modeling.
+
+```{r}
+set.seed(123)
 # split data into train and test sets
-train_rows <- sample(nrow(df), 0.7*nrow(df))
+train_rows <- sample(nrow(df), nrow(df)*0.7)
 trainData <- df[train_rows,]
 testData <- df[-train_rows,] 
 ```
@@ -231,8 +240,6 @@ df_tmp <- df %>% select(c('n_tokens_title',
                           'LDA_04',
                           'shares'))
 corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
-
-
 
 ```
 
