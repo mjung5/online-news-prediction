@@ -16,12 +16,15 @@ library(tidyverse)
 library(corrplot)
 library(caret)
 library(gbm)
+library(leaps)
+library(caret)
 ```
 
 ## Intro
 This project aims at building predictive models on the [Online News Popularity](https://archive.ics.uci.edu/ml/datasets/Online+News+Popularity#) dataset. Our goal is to build models that predict the number of shares an article receives based on characteristics of the article. This work is important to help writers/companies understand factors that influence article success (as measured by the number of shares an article obtains). This work could also be integrated in the calculation of advertisement space on articles (articles that receive more shares should demand more for ad space). 
 
 The characteristics we will explore include day of week, number of links, word count of title, word count of content
+
 + `weekday`: day of week that article was published (Monday, Tuesday, ...)
 + `num_hrefs`: number of links referenced in article
 + `n_tokens_title`: word count of title
@@ -250,3 +253,44 @@ Above shows the correlation matrix for other numerical variables. Shares is the 
 ```{r}
 
 ```
+
+### [Another] Linear Regression
+
+```{r}
+train_control <- trainControl(method = 'cv', number = 5)
+model1 <- train(shares ~ n_tokens_title + n_tokens_content + num_hrefs + num_self_hrefs +
+                  is_weekend , 
+                data = trainData, 
+                method = 'lm', 
+                trControl = train_control)
+summary(model1)
+```
+
+```{r}
+# get all numeric columns
+train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
+
+# fit using forward selection
+forward <- regsubsets(shares ~ .,
+                      data = train_df,
+                      nvmax = 10,
+                      method = "forward")
+# summary
+mod_summary <- summary(forward)
+mod_summary
+
+# get metrics for each step
+metrics <- data.frame(aic = mod_summary$cp,
+bic = mod_summary$bic,
+adjR2 = mod_summary$adjr2)
+metrics
+```
+
+
+
+
+
+
+
+
+
