@@ -18,6 +18,7 @@ Bus
     -   [Correlation with numeric
         variables](#correlation-with-numeric-variables)
 -   [Modeling](#modeling)
+    -   [Linear Models](#linear-models)
 
 ## Intro
 
@@ -32,12 +33,15 @@ advertisement space on articles (articles that receive more shares
 should demand more for ad space).
 
 The characteristics we will explore include day of week, number of
-links, word count of title, word count of content + `weekday`: day of
-week that article was published (Monday, Tuesday, …) + `num_hrefs`:
-number of links referenced in article + `n_tokens_title`: word count of
-title + `n_tokens_content`: word count of article +
-`rate_positive_words` and `rate_negative_words`: rate of
-positive/negative words among non-neutral tokens
+links, word count of title, word count of content
+
+-   `weekday`: day of week that article was published (Monday, Tuesday,
+    …)
+-   `num_hrefs`: number of links referenced in article
+-   `n_tokens_title`: word count of title
+-   `n_tokens_content`: word count of article
+-   `rate_positive_words` and `rate_negative_words`: rate of
+    positive/negative words among non-neutral tokens
 
 The models used to build … continue from here Data was split by channel
 type…
@@ -64,14 +68,14 @@ df <- read_csv('data/OnlineNewsPopularity.csv') %>%
 
     ## Rows: 39644 Columns: 61
 
-    ## -- Column specification ---------------------------------------------------------------------------------------------------------------------------------------
+    ## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────────────────
     ## Delimiter: ","
     ## chr  (1): url
-    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_unique_tokens, num_hrefs, num_self_hrefs, num_imgs, nu...
+    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_unique_tokens, n...
 
     ## 
-    ## i Use `spec()` to retrieve the full column specification for this data.
-    ## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 ``` r
 dim(df)
@@ -166,15 +170,15 @@ df %>%
   knitr::kable()
 ```
 
-| weekday   | total\_shares | avg\_shares | max\_shares |
-|:----------|--------------:|------------:|------------:|
-| Sunday    |       1215518 |        3544 |       56900 |
-| Monday    |       4482214 |        3887 |      690400 |
-| Tuesday   |       3466021 |        2932 |      310800 |
-| Wednesday |       3401897 |        2677 |      158900 |
-| Thursday  |       3560327 |        2885 |      306100 |
-| Friday    |       1966657 |        2364 |      102200 |
-| Saturday  |       1075736 |        4427 |      144400 |
+| weekday   | total_shares | avg_shares | max_shares |
+|:----------|-------------:|-----------:|-----------:|
+| Sunday    |      1215518 |       3544 |      56900 |
+| Monday    |      4482214 |       3887 |     690400 |
+| Tuesday   |      3466021 |       2932 |     310800 |
+| Wednesday |      3401897 |       2677 |     158900 |
+| Thursday  |      3560327 |       2885 |     306100 |
+| Friday    |      1966657 |       2364 |     102200 |
+| Saturday  |      1075736 |       4427 |     144400 |
 
 The above table shows a breakdown of total, average, and maximum number
 of shares for articles published on a specific weekday for this channel.
@@ -189,12 +193,12 @@ df %>%
   knitr::kable()
 ```
 
-| Popularity         | total\_shares | avg\_shares | max\_shares |
-|:-------------------|--------------:|------------:|------------:|
-| Not at all popular |       1113353 |         722 |         946 |
-| Not too popular    |       1977017 |        1171 |        1400 |
-| Somewhat popular   |       3369800 |        1992 |        2800 |
-| Very popular       |      12708200 |        9505 |      690400 |
+| Popularity         | total_shares | avg_shares | max_shares |
+|:-------------------|-------------:|-----------:|-----------:|
+| Not at all popular |      1113353 |        722 |        946 |
+| Not too popular    |      1977017 |       1171 |       1400 |
+| Somewhat popular   |      3369800 |       1992 |       2800 |
+| Very popular       |     12708200 |       9505 |     690400 |
 
 The above table show a summary of the newly created `popularity`
 variable.
@@ -301,12 +305,12 @@ slops.
 knitr::kable(round(cor(df[ , c(3:4, 10:11)]), 2))
 ```
 
-|                    | n\_tokens\_title | n\_tokens\_content | num\_imgs | num\_videos |
-|:-------------------|-----------------:|-------------------:|----------:|------------:|
-| n\_tokens\_title   |             1.00 |               0.00 |     -0.02 |        0.04 |
-| n\_tokens\_content |             0.00 |               1.00 |      0.24 |        0.14 |
-| num\_imgs          |            -0.02 |               0.24 |      1.00 |       -0.02 |
-| num\_videos        |             0.04 |               0.14 |     -0.02 |        1.00 |
+|                  | n_tokens_title | n_tokens_content | num_imgs | num_videos |
+|:-----------------|---------------:|-----------------:|---------:|-----------:|
+| n_tokens_title   |           1.00 |             0.00 |    -0.02 |       0.04 |
+| n_tokens_content |           0.00 |             1.00 |     0.24 |       0.14 |
+| num_imgs         |          -0.02 |             0.24 |     1.00 |      -0.02 |
+| num_videos       |           0.04 |             0.14 |    -0.02 |       1.00 |
 
 ``` r
 df_tmp <- df %>% select(c('n_tokens_title', 
@@ -335,3 +339,97 @@ have weak correlation with shares and make sure to include these in our
 model building phase.
 
 ## Modeling
+
+### Linear Models
+
+#### Ordinary Least Squares
+
+description
+
+#### Logarithmic Linear Regression
+
+Now, let’s look at regresssing on the log-transformed target variable of
+shares.
+
+``` r
+# get all numeric columns
+train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
+test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
+
+# code used to get regression variables
+## fit using forward selection
+#forward <- regsubsets(log(shares) ~ .,
+#                      data = train_df,
+#                      nvmax = 10,
+#                      method = "forward")
+## summary
+#mod_summary <- summary(forward)
+
+# train model
+lm2 <- lm(log(shares) ~ n_tokens_content + num_hrefs + average_token_length + 
+                        num_keywords + kw_min_min + kw_max_avg + kw_avg_avg + 
+                        is_weekend + LDA_04 + global_subjectivity, 
+          data = train_df
+          )
+
+# predict on test data
+predLm2 <- predict(lm2, test_df)
+
+# calculate rmse
+rmseLm2 <- sqrt(mean((predLm2 - test_df$shares)^2))
+rmseLm2
+```
+
+    ## [1] 16288.01
+
+#### Random Forest Model
+
+placeholder
+
+#### Boosted Tree Model
+
+The boosted tree is another tree-based regression model. This model aims
+to predict the residuals between the number of shares (target variable)
+of each observation and the average number of shares. To do this, the
+model builds smaller trees of specified depth that add/subtract to
+predictions with the hope that predictions move closer to their residual
+values. To prevent overfitting of data, trees are constricted to a
+‘shrinkage’ parameter (that takes a value between 0 and 1) which limits
+the amount of boosting on predictions.
+
+For a really good video explanation, watch
+[this](https://www.youtube.com/watch?v=3CC4N4z3GJc).
+
+``` r
+# get all numeric columns
+train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
+test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
+
+# declare grid of values to test in cross validation
+## code retrieved from https://topepo.github.io/caret/model-training-and-tuning.html
+gbmGrid <-  expand.grid(interaction.depth = c(1, 5, 9), # complexity of tree
+                        n.trees = (1:30)*50, # number of iterations (i.e. trees)
+                        shrinkage = 0.1, # learning rate
+                        n.minobsinnode = 20) # minimum number of samples in a node to commence splitting
+
+# train using crossvalidation, print out best fitting parameters
+boostFit <- train(shares ~ .,
+                data = train_df,
+                method = "gbm",
+                trControl = trainControl("cv", number = 10),
+                verbose = FALSE
+                )
+boostFit$bestTune
+```
+
+    ##   n.trees interaction.depth shrinkage n.minobsinnode
+    ## 1      50                 1       0.1             10
+
+``` r
+# evaluate on test dataset
+boostPred <- predict(boostFit, newdata = dplyr::select(test_df, -shares), n.trees = 100)
+boostRMSE <- sqrt(mean((boostPred-test_df$shares)^2))
+boostRMSE
+```
+
+    ## [1] 16111.89
