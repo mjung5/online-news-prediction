@@ -15,10 +15,19 @@ World
     -   [Number of links](#number-of-links)
     -   [Number of words in the title and
         content](#number-of-words-in-the-title-and-content)
+    -   [Unique words count](#unique-words-count)
+    -   [Number of image and video](#number-of-image-and-video)
+    -   [Number of positive and negative words
+        rate](#number-of-positive-and-negative-words-rate)
+    -   [Title subjectivity](#title-subjectivity)
+    -   [Number of positive and negative words
+        rate](#number-of-positive-and-negative-words-rate-1)
     -   [Correlation with numeric
         variables](#correlation-with-numeric-variables)
 -   [Modeling](#modeling)
-    -   [Linear Models](#linear-models)
+    -   [Linear Regression](#linear-regression)
+    -   [Ensemble Tree](#ensemble-tree)
+-   [Comparison](#comparison)
 
 ## Intro
 
@@ -68,14 +77,14 @@ df <- read_csv('data/OnlineNewsPopularity.csv') %>%
 
     ## Rows: 39644 Columns: 61
 
-    ## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────────────────
+    ## -- Column specification ---------------------------------------------------------------------------------------------------------------------------------------
     ## Delimiter: ","
     ## chr  (1): url
-    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_unique_tokens, n...
+    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_unique_tokens, num_hrefs, num_self_hrefs, num_imgs, nu...
 
     ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+    ## i Use `spec()` to retrieve the full column specification for this data.
+    ## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 ``` r
 dim(df)
@@ -120,7 +129,22 @@ df$Popularity <- as.factor(df$Popularity)
 
 # Use ordered function on a factor to order the levels
 df$Popularity <- ordered(df$Popularity, levels = c("Not at all popular", "Not too popular", "Somewhat popular", "Very popular"))
+
+
+# Deleting variables
+#df <- df[-1:2, 34:38]
 ```
+
+Our data set contains 30 000 instances; each consists of 60 attributes
+and one dependent variable, the number of shares of the article.
+
+The following variables can be omitted:
+
+url: URL of the article (non-predictive) timedelta: Days between the
+article publication and the dataset acquisition (non-predictive) five
+LDA variables is\_weekend, since it seems to be duplicating days of week
+kw\_min\_min, kw\_avg\_min, kw\_min\_avg have a number of negative
+values
 
 We now split the data into train and test sets for predicitve modeling.
 
@@ -170,15 +194,15 @@ df %>%
   knitr::kable()
 ```
 
-| weekday   | total_shares | avg_shares | max_shares |
-|:----------|-------------:|-----------:|-----------:|
-| Sunday    |      1477309 |       2605 |      55600 |
-| Monday    |      3330409 |       2456 |     141400 |
-| Tuesday   |      3432328 |       2220 |     115700 |
-| Wednesday |      2941868 |       1880 |      53500 |
-| Thursday  |      3756199 |       2394 |     284700 |
-| Friday    |      2908077 |       2228 |     128500 |
-| Saturday  |      1432545 |       2760 |      75500 |
+| weekday   | total\_shares | avg\_shares | max\_shares |
+|:----------|--------------:|------------:|------------:|
+| Sunday    |       1477309 |        2605 |       55600 |
+| Monday    |       3330409 |        2456 |      141400 |
+| Tuesday   |       3432328 |        2220 |      115700 |
+| Wednesday |       2941868 |        1880 |       53500 |
+| Thursday  |       3756199 |        2394 |      284700 |
+| Friday    |       2908077 |        2228 |      128500 |
+| Saturday  |       1432545 |        2760 |       75500 |
 
 The above table shows a breakdown of total, average, and maximum number
 of shares for articles published on a specific weekday for this channel.
@@ -193,12 +217,12 @@ df %>%
   knitr::kable()
 ```
 
-| Popularity         | total_shares | avg_shares | max_shares |
-|:-------------------|-------------:|-----------:|-----------:|
-| Not at all popular |      2162892 |        712 |        946 |
-| Not too popular    |      2841343 |       1157 |       1400 |
-| Somewhat popular   |      3341600 |       1958 |       2800 |
-| Very popular       |     10932900 |       8896 |     284700 |
+| Popularity         | total\_shares | avg\_shares | max\_shares |
+|:-------------------|--------------:|------------:|------------:|
+| Not at all popular |       2162892 |         712 |         946 |
+| Not too popular    |       2841343 |        1157 |        1400 |
+| Somewhat popular   |       3341600 |        1958 |        2800 |
+| Very popular       |      10932900 |        8896 |      284700 |
 
 The above table show a summary of the newly created `popularity`
 variable.
@@ -234,11 +258,11 @@ on producing ‘very popular’ articles.
 ``` r
 # histogram for day of week vs shares
 
-g2 <- df %>% ggplot(aes(x=weekday, y=shares)) +
+g1 <- df %>% ggplot(aes(x=weekday, y=shares)) +
         geom_bar(stat="identity", fill = "darkblue") + 
    theme(axis.text.x = element_text(angle = 45, vjust = .75)) +
         ggtitle('Day of Week and Total Number of Shares')
-g2
+g1
 ```
 
 ![](world_files/figure-gfm/2_eda-1.png)<!-- -->
@@ -250,10 +274,11 @@ for all articles published on each day of week.
 
 ``` r
 # simple scatter plot
-g1 <- df %>% ggplot(aes(x=num_hrefs, y=shares)) +
+g2 <- df %>% ggplot(aes(x=num_hrefs, y=shares)) +
         geom_point(size=2, shape=23) +
-        ylim(0, 10000)
-g1
+        ylim(0, 10000) +
+        ggtitle("Number of links")  
+g2
 ```
 
     ## Warning: Removed 254 rows containing missing values (geom_point).
@@ -267,71 +292,163 @@ its shares. This plot is motivated by the implementation of Google’s
 ### Number of words in the title and content
 
 ``` r
+library(cowplot)
+
 #scatter plots of Number of words in the title
 g3 <- ggplot(data = df, aes(x =  n_tokens_title, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
       ggtitle("Word count in the title")  
-g3
-```
 
-![](world_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-Above shows the number of words in the title compared to the number of
-shares. Perhaps a quadratic relationship is appropriate for this
-variable if a bell shape appears in the plot.
-
-``` r
 #scatter plots of Number of words in the content
 g4 <- ggplot(data = df, aes(x =  n_tokens_content, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
       ggtitle("Word count in the content")
-g4
+
+plot_grid(g3, g4,  labels = c('A', 'B'))   
+```
+
+![](world_files/figure-gfm/unnamed-chunk-7-1.png)<!-- --> Graph A shows
+the number of words in the title compared to the number of shares.
+Perhaps a quadratic relationship is appropriate for this variable if a
+bell shape appears in the plot. Graph B shows a comparison of the number
+of words that appear in the article compared to the number of shares.
+Perhaps a negative linear relationship is appropriate if the data
+exihibits a slightly negative slops.
+
+### Unique words count
+
+``` r
+ggplot(data = df, aes(x =  n_unique_tokens, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) + 
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Unique Word count")
 ```
 
 ![](world_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
-Above shows a comparison of the number of words that appear in the
-article compared to the number of shares. Perhaps a negative linear
-relationship is appropriate if the data exihibits a slightly negative
-slops.
+### Number of image and video
+
+``` r
+#scatter plots of Number of words in the content
+g5 <- ggplot(data = df, aes(x =  num_imgs, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) +
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Number of image")
+
+
+#scatter plots of Number of words in the content
+g6 <- ggplot(data = df, aes(x =  num_videos, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) + 
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Number of video")
+
+
+plot_grid(g5, g6,  labels = c('C', 'D')) 
+```
+
+![](world_files/figure-gfm/unnamed-chunk-9-1.png)<!-- --> \#\#\# Number
+of keywords
+
+``` r
+ggplot(data = df, aes(x =  num_keywords, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) + 
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Number of keywords")
+```
+
+![](world_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+### Number of positive and negative words rate
+
+``` r
+#scatter plots of positive and negative words rate
+g7 <- ggplot(data = df, aes(x =  rate_positive_words, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) +
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Positive words rate")
+
+
+#scatter plots of Number of words in the content
+g8 <- ggplot(data = df, aes(x =  rate_negative_words, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) +
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Negative words rate")
+
+
+plot_grid(g7, g8,  labels = c('A', 'B')) 
+```
+
+![](world_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+### Title subjectivity
+
+``` r
+#scatter plot of title subjectivity
+ggplot(data = df, aes(x =     title_subjectivity, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) +
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("title subjectivity")
+```
+
+![](world_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+### Number of positive and negative words rate
+
+``` r
+#scatter plots of positive and negative words rate
+g9 <- ggplot(data = df, aes(x =  avg_positive_polarity, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) +
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Average positive polarity")
+
+
+#scatter plots of Number of words in the content
+g10 <- ggplot(data = df, aes(x =  avg_negative_polarity, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) +
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Average negative polarity")
+
+
+plot_grid(g9, g10,  labels = c('A', 'B')) 
+```
+
+![](world_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ### Correlation with numeric variables
 
 ``` r
-knitr::kable(round(cor(df[ , c(3:4, 10:11)]), 2))
-```
-
-|                  | n_tokens_title | n_tokens_content | num_imgs | num_videos |
-|:-----------------|---------------:|-----------------:|---------:|-----------:|
-| n_tokens_title   |           1.00 |             0.05 |    -0.01 |       0.03 |
-| n_tokens_content |           0.05 |             1.00 |     0.24 |       0.06 |
-| num_imgs         |          -0.01 |             0.24 |     1.00 |      -0.03 |
-| num_videos       |           0.03 |             0.06 |    -0.03 |       1.00 |
-
-``` r
 df_tmp <- df %>% select(c('n_tokens_title', 
                           'n_tokens_content',
+                          'n_unique_tokens',
                           'num_hrefs',
-                          'num_self_hrefs',
                           'num_imgs',
                           'num_videos',
                           'num_keywords',
+                          'is_weekend',
                           'rate_positive_words',
                           'rate_negative_words',
-                          'LDA_00',
-                          'LDA_01',
-                          'LDA_02',
-                          'LDA_03',
-                          'LDA_04',
-                          'shares'))
+                          'title_subjectivity',
+                          'avg_positive_polarity',
+                          'avg_negative_polarity',
+                          'shares',))
 corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
 ```
 
-![](world_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](world_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 Above shows the correlation matrix for other numerical variables. Shares
 is the bottom row. We use this plot to find other variables that might
@@ -340,13 +457,116 @@ model building phase.
 
 ## Modeling
 
-### Linear Models
+### Linear Regression
 
-#### Ordinary Least Squares
+place holder
 
-description
+#### Linear model 1
 
-#### Logarithmic Linear Regression
+The first linear regression model will have predictors selected by
+stepwise selection. After choosing the subset of predictors, we will use
+repeated cross-validation with 10 folder and will find the RMSE and R2.
+
+``` r
+# get all numeric columns
+train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
+test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
+
+# Stepwise model selection
+lmFitSelect <- lm(shares ~ n_tokens_title + n_tokens_content+ is_weekend +  num_hrefs+  num_imgs+ num_videos+num_keywords+ rate_positive_words + title_subjectivity  + I(n_tokens_content^2) + I(num_imgs^2)+ I(num_videos^2) + I(num_hrefs^2) , data = train_df)
+models <- step(lmFitSelect)
+```
+
+    ## Start:  AIC=99613.83
+    ## shares ~ n_tokens_title + n_tokens_content + is_weekend + num_hrefs + 
+    ##     num_imgs + num_videos + num_keywords + rate_positive_words + 
+    ##     title_subjectivity + I(n_tokens_content^2) + I(num_imgs^2) + 
+    ##     I(num_videos^2) + I(num_hrefs^2)
+    ## 
+    ##                         Df Sum of Sq        RSS   AIC
+    ## - rate_positive_words    1   6652464 1.2695e+11 99612
+    ## - I(num_hrefs^2)         1  16539108 1.2696e+11 99613
+    ## <none>                               1.2695e+11 99614
+    ## - I(num_imgs^2)          1  43775332 1.2699e+11 99614
+    ## - I(num_videos^2)        1  51383995 1.2700e+11 99614
+    ## - title_subjectivity     1  96737009 1.2705e+11 99616
+    ## - num_keywords           1 137062495 1.2709e+11 99618
+    ## - num_hrefs              1 139746027 1.2709e+11 99618
+    ## - is_weekend             1 178833828 1.2713e+11 99620
+    ## - num_imgs               1 190231306 1.2714e+11 99621
+    ## - I(n_tokens_content^2)  1 248170099 1.2720e+11 99623
+    ## - n_tokens_title         1 297687637 1.2725e+11 99626
+    ## - num_videos             1 328894559 1.2728e+11 99627
+    ## - n_tokens_content       1 660322705 1.2761e+11 99642
+    ## 
+    ## Step:  AIC=99612.14
+    ## shares ~ n_tokens_title + n_tokens_content + is_weekend + num_hrefs + 
+    ##     num_imgs + num_videos + num_keywords + title_subjectivity + 
+    ##     I(n_tokens_content^2) + I(num_imgs^2) + I(num_videos^2) + 
+    ##     I(num_hrefs^2)
+    ## 
+    ##                         Df Sum of Sq        RSS   AIC
+    ## - I(num_hrefs^2)         1  19068296 1.2697e+11 99611
+    ## <none>                               1.2695e+11 99612
+    ## - I(num_imgs^2)          1  46212637 1.2700e+11 99612
+    ## - I(num_videos^2)        1  51027788 1.2701e+11 99613
+    ## - title_subjectivity     1  97289071 1.2705e+11 99615
+    ## - num_keywords           1 141088208 1.2710e+11 99617
+    ## - num_hrefs              1 151363012 1.2711e+11 99617
+    ## - is_weekend             1 176802206 1.2713e+11 99618
+    ## - num_imgs               1 183845256 1.2714e+11 99619
+    ## - I(n_tokens_content^2)  1 243391973 1.2720e+11 99621
+    ## - n_tokens_title         1 293964727 1.2725e+11 99624
+    ## - num_videos             1 327660677 1.2728e+11 99625
+    ## - n_tokens_content       1 653808786 1.2761e+11 99640
+    ## 
+    ## Step:  AIC=99611.02
+    ## shares ~ n_tokens_title + n_tokens_content + is_weekend + num_hrefs + 
+    ##     num_imgs + num_videos + num_keywords + title_subjectivity + 
+    ##     I(n_tokens_content^2) + I(num_imgs^2) + I(num_videos^2)
+    ## 
+    ##                         Df Sum of Sq        RSS   AIC
+    ## <none>                               1.2697e+11 99611
+    ## - I(num_imgs^2)          1  43320928 1.2702e+11 99611
+    ## - I(num_videos^2)        1  50984203 1.2703e+11 99611
+    ## - title_subjectivity     1  96886931 1.2707e+11 99614
+    ## - num_keywords           1 147319654 1.2712e+11 99616
+    ## - is_weekend             1 175905255 1.2715e+11 99617
+    ## - num_imgs               1 183937308 1.2716e+11 99618
+    ## - I(n_tokens_content^2)  1 227094799 1.2720e+11 99620
+    ## - num_hrefs              1 235604513 1.2721e+11 99620
+    ## - n_tokens_title         1 288806093 1.2726e+11 99622
+    ## - num_videos             1 327175456 1.2730e+11 99624
+    ## - n_tokens_content       1 636445923 1.2761e+11 99639
+
+``` r
+# train data with variables chosen by stepWise
+set.seed(10)
+lm.fit1 <- train(shares ~ num_imgs + num_videos + rate_positive_words + I(n_tokens_content^2) + 
+                        I(num_imgs^2) + I(num_videos^2), data = train_df,
+                        method="lm",
+                        preProcess = c("center","scale"),
+                        trControl = trainControl(method = "repeatedcv", number = 10, repeats = 3))
+
+lm.fit1
+```
+
+    ## Linear Regression 
+    ## 
+    ## 5898 samples
+    ##    4 predictor
+    ## 
+    ## Pre-processing: centered (6), scaled (6) 
+    ## Resampling: Cross-Validated (10 fold, repeated 3 times) 
+    ## Summary of sample sizes: 5309, 5307, 5306, 5308, 5309, 5309, ... 
+    ## Resampling results:
+    ## 
+    ##   RMSE      Rsquared     MAE    
+    ##   4611.296  0.007073393  1845.49
+    ## 
+    ## Tuning parameter 'intercept' was held constant at a value of TRUE
+
+#### Linear model 2 - Logarithmic Linear Regression
 
 Now, let’s look at regresssing on the log-transformed target variable of
 shares.
@@ -366,25 +586,76 @@ test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
 #mod_summary <- summary(forward)
 
 # train model
-lm2 <- lm(log(shares) ~ n_tokens_content + num_hrefs + average_token_length + 
+lm.fit2 <- lm(log(shares) ~ n_tokens_content + num_hrefs + average_token_length + 
                         num_keywords + kw_min_min + kw_max_avg + kw_avg_avg + 
                         is_weekend + LDA_04 + global_subjectivity, 
           data = train_df
           )
 
-# predict on test data
-predLm2 <- predict(lm2, test_df)
-
-# calculate rmse
-rmseLm2 <- sqrt(mean((predLm2 - test_df$shares)^2))
-rmseLm2
+          
+lm.fit2
 ```
 
-    ## [1] 8831.987
+    ## 
+    ## Call:
+    ## lm(formula = log(shares) ~ n_tokens_content + num_hrefs + average_token_length + 
+    ##     num_keywords + kw_min_min + kw_max_avg + kw_avg_avg + is_weekend + 
+    ##     LDA_04 + global_subjectivity, data = train_df)
+    ## 
+    ## Coefficients:
+    ##          (Intercept)      n_tokens_content             num_hrefs  average_token_length          num_keywords            kw_min_min            kw_max_avg  
+    ##            6.826e+00            -4.190e-05             8.914e-03            -1.721e-01             1.991e-02             9.481e-04            -2.855e-05  
+    ##           kw_avg_avg            is_weekend                LDA_04   global_subjectivity  
+    ##            2.664e-04             2.704e-01             2.115e-01             8.793e-01
+
+``` r
+#predict on test data
+#predLm2 <- predict(lm.fit2, test_df)
+
+# calculate rmse
+#rmseLm2 <- sqrt(mean((predLm2 - test_df$shares)^2))
+#rmseLm2
+```
+
+### Ensemble Tree
+
+place holder
 
 #### Random Forest Model
 
-placeholder
+``` r
+# get all numeric columns
+train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
+test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
+# tuning parameter is mtry, use values of 1,2,..,5
+rfFit <- train(shares ~ .,
+               data = train_df, 
+               method = "rf", 
+               preProcess = c("center", "scale"),
+               tuneGrid = data.frame(mtry = (1:5)))
+
+rfFit
+```
+
+    ## Random Forest 
+    ## 
+    ## 5898 samples
+    ##   53 predictor
+    ## 
+    ## Pre-processing: centered (53), scaled (53) 
+    ## Resampling: Bootstrapped (25 reps) 
+    ## Summary of sample sizes: 5898, 5898, 5898, 5898, 5898, 5898, ... 
+    ## Resampling results across tuning parameters:
+    ## 
+    ##   mtry  RMSE      Rsquared    MAE     
+    ##   1     4732.421  0.03657861  1819.093
+    ##   2     4733.375  0.03602401  1855.614
+    ##   3     4750.076  0.03284995  1878.779
+    ##   4     4760.588  0.03170568  1893.641
+    ##   5     4771.564  0.03060488  1907.426
+    ## 
+    ## RMSE was used to select the optimal model using the smallest value.
+    ## The final value used for the model was mtry = 1.
 
 #### Boosted Tree Model
 
@@ -417,7 +688,8 @@ boostFit <- train(shares ~ .,
                 data = train_df,
                 method = "gbm",
                 trControl = trainControl("cv", number = 10),
-                verbose = FALSE
+                verbose = FALSE,
+                #tuneGrid = gbmGrid
                 )
 boostFit$bestTune
 ```
@@ -427,9 +699,48 @@ boostFit$bestTune
 
 ``` r
 # evaluate on test dataset
-boostPred <- predict(boostFit, newdata = dplyr::select(test_df, -shares), n.trees = 100)
-boostRMSE <- sqrt(mean((boostPred-test_df$shares)^2))
-boostRMSE
+#boostPred <- predict(boostFit, newdata = dplyr::select(test_df, -shares), n.trees = 100)
+#boostRMSE <- sqrt(mean((boostPred-test_df$shares)^2))
+#boostRMSE
 ```
 
-    ## [1] 8416.794
+## Comparison
+
+Now, we compare the 4 models developed above. Each model was evaluated
+on a test data set and Root MSE values(roof of test prediction error)
+were compared.
+
+``` r
+# Predict on test data
+
+predLm1 <- predict(lm.fit1, newdata = test_df)
+predLm2 <- predict(lm.fit2, newdata = test_df)
+rfPred <- predict(rfFit, newdata = test_df)
+boostPred <- predict(boostFit, newdata = test_df)
+
+# Calculate rmse
+
+rmseLm1 <- sqrt(mean((predLm1 - test_df$shares)^2))
+rmseLm2 <- sqrt(mean((predLm2 - test_df$shares)^2))
+rfMSE <- sqrt(mean((rfPred - test_df$shares)^2))
+boostRMSE <- sqrt(mean((boostPred - test_df$shares)^2))
+
+rmseTotal <- data.frame('Linear Regression Model 1' = rmseLm1, 
+                   'Linear Regression Model 2' = rmseLm2, 
+                   'Random Forest Model' = rfMSE, 
+                   'Boosting Model' = boostRMSE)
+
+knitr::kable(t(rmseTotal),
+               digits=3,
+               caption="Summary Table of RMSE score",
+               col.names = "RMSE")
+```
+
+|                           |     RMSE |
+|:--------------------------|---------:|
+| Linear.Regression.Model.1 | 8476.014 |
+| Linear.Regression.Model.2 | 8831.987 |
+| Random.Forest.Model       | 8396.325 |
+| Boosting.Model            | 8420.982 |
+
+Summary Table of RMSE score
