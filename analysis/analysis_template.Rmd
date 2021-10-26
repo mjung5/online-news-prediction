@@ -90,7 +90,21 @@ df$Popularity <- as.factor(df$Popularity)
 # Use ordered function on a factor to order the levels
 df$Popularity <- ordered(df$Popularity, levels = c("Not at all popular", "Not too popular", "Somewhat popular", "Very popular"))
 
+
+# Deleting variables
+#df <- df[-1:2, 34:38]
 ```
+
+Our data set contains 30 000 instances; each consists of 60 attributes and one dependent variable, the number of shares of the article.
+
+The following variables can be omitted:
+
+url: URL of the article (non-predictive)
+timedelta: Days between the article publication and the dataset acquisition (non-predictive)
+five LDA variables
+is_weekend, since it seems to be duplicating days of week
+kw_min_min, kw_avg_min, kw_min_avg have a number of negative values
+
 
 We now split the data into train and test sets for predicitve modeling.
 
@@ -206,6 +220,7 @@ g3 <- ggplot(data = df, aes(x =  n_tokens_title,
 g3
 ```
 
+
 Above shows the number of words in the title compared to the number of shares. Perhaps a quadratic relationship is appropriate for this variable if a bell shape appears in the plot.
 
 ```{r}
@@ -220,6 +235,52 @@ g4
 
 Above shows a comparison of the number of words that appear in the article compared to the number of shares. Perhaps a negative linear relationship is appropriate if the data exihibits a slightly negative slops.
 
+```{r}
+#scatter plots of Number of words in the content
+g5 <- ggplot(data = df, aes(x =  num_imgs, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) + geom_smooth(formula = 'y ~ x', method = 'loess')+
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Word count in the content")
+g5
+```
+```{r}
+#scatter plots of Number of words in the content
+g6 <- ggplot(data = df, aes(x =  num_videos, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) + geom_smooth(formula = 'y ~ x', method = 'loess')+
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Word count in the content")
+g6
+```
+```{r}
+#scatter plots of Number of words in the content
+g7 <- ggplot(data = df, aes(x =  num_keywords, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) + geom_smooth(formula = 'y ~ x', method = 'loess')+
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Word count in the content")
+g7
+```
+```{r}
+#scatter plots of Number of words in the content
+g8 <- ggplot(data = df, aes(x =  rate_positive_words, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) + geom_smooth(formula = 'y ~ x', method = 'loess')+
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Word count in the content")
+g8
+```
+```{r}
+#scatter plots of Number of words in the content
+g9 <- ggplot(data = df, aes(x =     abs_title_subjectivity, 
+                      y = shares)) +
+      geom_point(alpha = 0.50) + geom_smooth(formula = 'y ~ x', method = 'loess')+
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      ggtitle("Word count in the content")
+g9
+```
+
 ### Correlation with numeric variables
 
 ```{r}
@@ -229,6 +290,7 @@ knitr::kable(round(cor(df[ , c(3:4, 10:11)]), 2))
 ```{r}
 df_tmp <- df %>% select(c('n_tokens_title', 
                           'n_tokens_content',
+                          'n_unique_tokens',
                           'num_hrefs',
                           'num_self_hrefs',
                           'num_imgs',
@@ -236,12 +298,11 @@ df_tmp <- df %>% select(c('n_tokens_title',
                           'num_keywords',
                           'rate_positive_words',
                           'rate_negative_words',
-                          'LDA_00',
-                          'LDA_01',
-                          'LDA_02',
-                          'LDA_03',
-                          'LDA_04',
-                          'shares'))
+                          'title_subjectivity',
+                          'title_sentiment_polarity',
+                          'avg_positive_polarity',
+                          'avg_negative_polarity',
+                          'shares',))
 corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
 
 ```
@@ -256,7 +317,13 @@ Above shows the correlation matrix for other numerical variables. Shares is the 
 description
 
 ```{r}
+set.seed(10)
+lrm.fit1 <- train(shares ~ n_tokens_title + n_tokens_content+ n_unique_tokens+avg_positive_polarity+  num_hrefs+  num_imgs+ num_videos+num_keywords+title_sentiment_polarity+ avg_negative_polarity+ rate_positive_words+rate_negative_words+  title_subjectivity  + I(n_tokens_title^2) , data = trainData,
+                  method="lm", preProcess = c("center","scale"),
+                  trControl = trainControl(method = "repeatedcv", number = 10, repeats = 3))
+summary(lrm.fit1)
 
+lrm.fit1
 ```
 
 #### Logarithmic Linear Regression
