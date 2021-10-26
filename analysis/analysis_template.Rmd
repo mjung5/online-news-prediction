@@ -311,20 +311,8 @@ Above shows the correlation matrix for other numerical variables. Shares is the 
 
 ## Modeling
 
-### Linear Models
-
 #### Ordinary Least Squares
-description
 
-```{r}
-set.seed(10)
-lrm.fit1 <- train(shares ~ n_tokens_title + n_tokens_content+ n_unique_tokens+avg_positive_polarity+  num_hrefs+  num_imgs+ num_videos+num_keywords+title_sentiment_polarity+ avg_negative_polarity+ rate_positive_words+rate_negative_words+  title_subjectivity  + I(n_tokens_title^2) , data = trainData,
-                  method="lm", preProcess = c("center","scale"),
-                  trControl = trainControl(method = "repeatedcv", number = 10, repeats = 3))
-summary(lrm.fit1)
-
-lrm.fit1
-```
 
 #### Logarithmic Linear Regression
 
@@ -359,8 +347,10 @@ rmseLm2 <- sqrt(mean((predLm2 - test_df$shares)^2))
 rmseLm2
 ```
 
-#### Random Forest Model
-placeholder
+
+```
+
+
 
 #### Boosted Tree Model
 
