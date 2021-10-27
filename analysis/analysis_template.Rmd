@@ -255,18 +255,21 @@ Graph B shows a comparison of the number of words that appear in the article com
 
 ### Unique words count
 
-David - may be delete this? Dr. Post said we do not need to do EDA for all the variables we include in model.
+Below, we see a plot of the number of unique words in each article compared to the number of shares. Across channels, there does not seem to be a strong linear correlation between these two variables. However, this variable may have significance in tree based models.
 
 ```{r}
 ggplot(data = trainData, aes(x =  n_unique_tokens, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-      ggtitle("Unique Word count")
+      ggtitle("Unique Word count") +
+      ylim(0, 10000)
 
 ```
 
 ### Number of image and video
+
+Below, we compare the number of images/videos to the number of shares. Across channels, it seems that most articles have less than 5 images, which makes fitting a linear model difficult to this variable.
 
 ```{r}
 #scatter plots of Number of words in the content
@@ -274,7 +277,8 @@ g5 <- ggplot(data = trainData, aes(x =  num_imgs,
                       y = shares)) +
       geom_point(alpha = 0.50) +
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-      ggtitle("Number of image")
+      ggtitle("Number of image") +
+      ylim(0, 10000)
 
 
 #scatter plots of Number of words in the content
@@ -282,14 +286,16 @@ g6 <- ggplot(data = trainData, aes(x =  num_videos,
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-      ggtitle("Number of video")
+      ggtitle("Number of video") +
+      ylim(0, 10000)
 
 
 plot_grid(g5, g6,  labels = c('C', 'D')) 
 ```
 ### Number of keywords
 
-David - may be delete this? Dr. Post said we do not need to do EDA for all the variables we include in model.
+Below, we compare the number of keywords that appear in an article to the number of shares. Across channels, there does not appear to be much linear correlation between the two variables.
+
 ```{r}
 ggplot(data = trainData, aes(x =  num_keywords, 
                       y = shares)) +
@@ -300,6 +306,8 @@ ggplot(data = trainData, aes(x =  num_keywords,
 ```
 
 ### Number of positive and negative words rate
+
+Below we compare the positive/negative rate of words that appear in an article to the number of shares of an article. Across channels, there seems to be a slight positive correlation between positive words rate and shares. Additionally, there seems to be a slight negative correlation between negative words rate and shares.
 
 ```{r}
 #scatter plots of positive and negative words rate
@@ -323,7 +331,7 @@ plot_grid(g7, g8,  labels = c('A', 'B'))
 
 ### Title subjectivity
 
-David - may be delete this? Dr. Post said we do not need to do EDA for all the variables we include in model
+Below we compare title subjectivity to the number of shares. Across channels, there does not seem to be a storng linear correlation between the two variables.
 
 ```{r}
 
