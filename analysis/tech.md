@@ -13,6 +13,7 @@ Tech
         week](#count-of-news-by-popularity-over-different-days-of-week)
     -   [Days of week](#days-of-week)
     -   [Number of links](#number-of-links)
+    -   [Number of link by weekday.](#number-of-link-by-weekday)
     -   [Number of words in the title and
         content](#number-of-words-in-the-title-and-content)
     -   [Unique words count](#unique-words-count)
@@ -26,7 +27,7 @@ Tech
         variables](#correlation-with-numeric-variables)
 -   [Modeling](#modeling)
     -   [Linear Regression](#linear-regression)
-    -   [Ensemble Tree](#ensemble-tree)
+    -   [Ensemble Tree-based model](#ensemble-tree-based-model)
 -   [Comparison](#comparison)
 
 ## Intro
@@ -77,10 +78,10 @@ df <- read_csv('data/OnlineNewsPopularity.csv') %>%
 
     ## Rows: 39644 Columns: 61
 
-    ## -- Column specification ---------------------------------------------------------------------------------------------------------------------------------------
+    ## -- Column specification --------------------------------------------------------
     ## Delimiter: ","
     ## chr  (1): url
-    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_unique_tokens, num_hrefs, num_self_hrefs, num_imgs, nu...
+    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_no...
 
     ## 
     ## i Use `spec()` to retrieve the full column specification for this data.
@@ -158,13 +159,15 @@ testData <- df[-train_rows,]
 
 ## Summarizations
 
+We will use train set for EDA.
+
 ### Exploratory Data Anaysis
 
 The summary statistics of targeted variable (shares)
 
 ``` r
 # summary statistics
-share_stat <- df %>% 
+share_stat <- trainData %>% 
                 summarise(Count = n(),
                           Min = min(shares), 
                           Q1 = quantile(shares, 0.25),
@@ -179,16 +182,16 @@ share_stat <- df %>%
 knitr::kable(share_stat, caption = "Summary Stats by shares", digits = 2)
 ```
 
-| Count | Min |   Q1 | Median | Average |   Q3 |    Max | Std.Dev |
-|------:|----:|-----:|-------:|--------:|-----:|-------:|--------:|
-|  7346 |  36 | 1100 |   1700 | 3072.28 | 3000 | 663600 | 9024.34 |
+| Count | Min |   Q1 | Median | Average |   Q3 |    Max |  Std.Dev |
+|------:|----:|-----:|-------:|--------:|-----:|-------:|---------:|
+|  5142 |  36 | 1100 |   1700 | 3129.22 | 3000 | 663600 | 10477.13 |
 
 Summary Stats by shares
 
 ### Shares by days of week
 
 ``` r
-df %>%
+trainData %>%
   group_by(weekday) %>%
   summarise(total_shares = sum(shares), avg_shares = round(mean(shares)), max_shares = max(shares)) %>%
   knitr::kable()
@@ -196,13 +199,13 @@ df %>%
 
 | weekday   | total\_shares | avg\_shares | max\_shares |
 |:----------|--------------:|------------:|------------:|
-| Sunday    |       1558532 |        3936 |       83300 |
-| Monday    |       3484532 |        2821 |       51000 |
-| Tuesday   |       4250146 |        2883 |       88500 |
-| Wednesday |       4765065 |        3363 |      663600 |
-| Thursday  |       3595351 |        2745 |       55200 |
-| Friday    |       3017254 |        3051 |      104100 |
-| Saturday  |       1898113 |        3615 |       96100 |
+| Sunday    |       1166240 |        4078 |       83300 |
+| Monday    |       2518120 |        2842 |       51000 |
+| Tuesday   |       2862349 |        2854 |       88500 |
+| Wednesday |       3543793 |        3565 |      663600 |
+| Thursday  |       2534848 |        2782 |       55200 |
+| Friday    |       2142397 |        3105 |      104100 |
+| Saturday  |       1322678 |        3556 |       96100 |
 
 The above table shows a breakdown of total, average, and maximum number
 of shares for articles published on a specific weekday for this channel.
@@ -211,7 +214,7 @@ Some channels tend to have more popular days than others.
 ### shares by popularity
 
 ``` r
-df %>% 
+trainData %>% 
   group_by(Popularity) %>%
   summarise(total_shares = sum(shares), avg_shares = round(mean(shares)), max_shares = max(shares)) %>%
   knitr::kable()
@@ -219,10 +222,10 @@ df %>%
 
 | Popularity         | total\_shares | avg\_shares | max\_shares |
 |:-------------------|--------------:|------------:|------------:|
-| Not at all popular |        864550 |         741 |         946 |
-| Not too popular    |       2168243 |        1191 |        1400 |
-| Somewhat popular   |       4801100 |        2015 |        2800 |
-| Very popular       |      14735100 |        7457 |      663600 |
+| Not at all popular |        590819 |         736 |         946 |
+| Not too popular    |       1521606 |        1190 |        1400 |
+| Somewhat popular   |       3413500 |        2020 |        2800 |
+| Very popular       |      10564500 |        7711 |      663600 |
 
 The above table show a summary of the newly created `popularity`
 variable.
@@ -232,7 +235,7 @@ variable.
 ``` r
 #Bar plot of weekday by popularity 
 
-ggplot(data = df, aes(x = weekday)) +
+ggplot(data = trainData, aes(x = weekday)) +
   geom_bar(aes(fill = as.factor(Popularity))) + 
   labs(x = "Days of week", 
        title = "Days of week by popularity") +
@@ -258,7 +261,7 @@ on producing ‘very popular’ articles.
 ``` r
 # histogram for day of week vs shares
 
-g1 <- df %>% ggplot(aes(x=weekday, y=shares)) +
+g1 <- trainData %>% ggplot(aes(x=weekday, y=shares)) +
         geom_bar(stat="identity", fill = "darkblue") + 
    theme(axis.text.x = element_text(angle = 45, vjust = .75)) +
         ggtitle('Day of Week and Total Number of Shares')
@@ -274,14 +277,14 @@ for all articles published on each day of week.
 
 ``` r
 # simple scatter plot
-g2 <- df %>% ggplot(aes(x=num_hrefs, y=shares)) +
+g2 <- trainData %>% ggplot(aes(x=num_hrefs, y=shares)) +
         geom_point(size=2, shape=23) +
         ylim(0, 10000) +
         ggtitle("Number of links")  
 g2
 ```
 
-    ## Warning: Removed 307 rows containing missing values (geom_point).
+    ## Warning: Removed 209 rows containing missing values (geom_point).
 
 ![](tech_files/figure-gfm/1_eda-1.png)<!-- -->
 
@@ -289,13 +292,32 @@ In the above scatter, we compare the number of links in an article to
 its shares. This plot is motivated by the implementation of Google’s
 [PageRank Algorithm](https://en.wikipedia.org/wiki/PageRank).
 
+### Number of link by weekday.
+
+``` r
+ggplot(trainData, aes(x = weekday, 
+                                y = num_hrefs, 
+                                fill = weekday)
+                            ) +
+  geom_boxplot() +
+  scale_x_discrete("Time weekday") +
+  ggtitle("Numbers link comparison by days of week") +
+  scale_fill_brewer(palette = "BuPu") +
+  scale_fill_discrete(name = "Weekday") 
+```
+
+    ## Scale for 'fill' is already present. Adding another scale for 'fill', which
+    ## will replace the existing scale.
+
+![](tech_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
 ### Number of words in the title and content
 
 ``` r
 library(cowplot)
 
 #scatter plots of Number of words in the title
-g3 <- ggplot(data = df, aes(x =  n_tokens_title, 
+g3 <- ggplot(data = trainData, aes(x =  n_tokens_title, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
@@ -303,7 +325,7 @@ g3 <- ggplot(data = df, aes(x =  n_tokens_title,
 
 
 #scatter plots of Number of words in the content
-g4 <- ggplot(data = df, aes(x =  n_tokens_content, 
+g4 <- ggplot(data = trainData, aes(x =  n_tokens_content, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
@@ -312,7 +334,7 @@ g4 <- ggplot(data = df, aes(x =  n_tokens_content,
 plot_grid(g3, g4,  labels = c('A', 'B'))   
 ```
 
-![](tech_files/figure-gfm/unnamed-chunk-7-1.png)<!-- --> Graph A shows
+![](tech_files/figure-gfm/unnamed-chunk-8-1.png)<!-- --> Graph A shows
 the number of words in the title compared to the number of shares.
 Perhaps a quadratic relationship is appropriate for this variable if a
 bell shape appears in the plot. Graph B shows a comparison of the number
@@ -322,21 +344,24 @@ exihibits a slightly negative slops.
 
 ### Unique words count
 
+David - may be delete this? Dr. Post said we do not need to do EDA for
+all the variables we include in model.
+
 ``` r
-ggplot(data = df, aes(x =  n_unique_tokens, 
+ggplot(data = trainData, aes(x =  n_unique_tokens, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
       ggtitle("Unique Word count")
 ```
 
-![](tech_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](tech_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ### Number of image and video
 
 ``` r
 #scatter plots of Number of words in the content
-g5 <- ggplot(data = df, aes(x =  num_imgs, 
+g5 <- ggplot(data = trainData, aes(x =  num_imgs, 
                       y = shares)) +
       geom_point(alpha = 0.50) +
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
@@ -344,7 +369,7 @@ g5 <- ggplot(data = df, aes(x =  num_imgs,
 
 
 #scatter plots of Number of words in the content
-g6 <- ggplot(data = df, aes(x =  num_videos, 
+g6 <- ggplot(data = trainData, aes(x =  num_videos, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
@@ -354,24 +379,27 @@ g6 <- ggplot(data = df, aes(x =  num_videos,
 plot_grid(g5, g6,  labels = c('C', 'D')) 
 ```
 
-![](tech_files/figure-gfm/unnamed-chunk-9-1.png)<!-- --> \#\#\# Number
+![](tech_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> \#\#\# Number
 of keywords
 
+David - may be delete this? Dr. Post said we do not need to do EDA for
+all the variables we include in model.
+
 ``` r
-ggplot(data = df, aes(x =  num_keywords, 
+ggplot(data = trainData, aes(x =  num_keywords, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
       ggtitle("Number of keywords")
 ```
 
-![](tech_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](tech_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ### Number of positive and negative words rate
 
 ``` r
 #scatter plots of positive and negative words rate
-g7 <- ggplot(data = df, aes(x =  rate_positive_words, 
+g7 <- ggplot(data = trainData, aes(x =  rate_positive_words, 
                       y = shares)) +
       geom_point(alpha = 0.50) +
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
@@ -379,7 +407,7 @@ g7 <- ggplot(data = df, aes(x =  rate_positive_words,
 
 
 #scatter plots of Number of words in the content
-g8 <- ggplot(data = df, aes(x =  rate_negative_words, 
+g8 <- ggplot(data = trainData, aes(x =  rate_negative_words, 
                       y = shares)) +
       geom_point(alpha = 0.50) +
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
@@ -389,26 +417,29 @@ g8 <- ggplot(data = df, aes(x =  rate_negative_words,
 plot_grid(g7, g8,  labels = c('A', 'B')) 
 ```
 
-![](tech_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](tech_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ### Title subjectivity
 
+David - may be delete this? Dr. Post said we do not need to do EDA for
+all the variables we include in model
+
 ``` r
 #scatter plot of title subjectivity
-ggplot(data = df, aes(x =     title_subjectivity, 
+ggplot(data = trainData, aes(x =     title_subjectivity, 
                       y = shares)) +
       geom_point(alpha = 0.50) +
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
       ggtitle("title subjectivity")
 ```
 
-![](tech_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](tech_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ### Number of positive and negative words rate
 
 ``` r
 #scatter plots of positive and negative words rate
-g9 <- ggplot(data = df, aes(x =  avg_positive_polarity, 
+g9 <- ggplot(data = trainData, aes(x =  avg_positive_polarity, 
                       y = shares)) +
       geom_point(alpha = 0.50) +
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
@@ -416,7 +447,7 @@ g9 <- ggplot(data = df, aes(x =  avg_positive_polarity,
 
 
 #scatter plots of Number of words in the content
-g10 <- ggplot(data = df, aes(x =  avg_negative_polarity, 
+g10 <- ggplot(data = trainData, aes(x =  avg_negative_polarity, 
                       y = shares)) +
       geom_point(alpha = 0.50) +
   #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
@@ -426,12 +457,14 @@ g10 <- ggplot(data = df, aes(x =  avg_negative_polarity,
 plot_grid(g9, g10,  labels = c('A', 'B')) 
 ```
 
-![](tech_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](tech_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 ### Correlation with numeric variables
 
+David- We can add more numerical variables here. what do you think?
+
 ``` r
-df_tmp <- df %>% select(c('n_tokens_title', 
+df_tmp <- trainData %>% select(c('n_tokens_title', 
                           'n_tokens_content',
                           'n_unique_tokens',
                           'num_hrefs',
@@ -448,7 +481,7 @@ df_tmp <- df %>% select(c('n_tokens_title',
 corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
 ```
 
-![](tech_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](tech_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 Above shows the correlation matrix for other numerical variables. Shares
 is the bottom row. We use this plot to find other variables that might
@@ -459,7 +492,15 @@ model building phase.
 
 ### Linear Regression
 
-place holder
+Linear regression is one of the commonly used supervised methods for
+modeling and useful tool for predicting a quantitative response on the
+basis of a single or multiple predictor variables. The idea of linear
+regression is that the model finds the best fit line between predictor
+variables and response variable, minimizing sum of squared errors. Also,
+Linear Regression is flexible in which to include many explanatory
+variables, higher order terms, and/or interaction, so we can see the
+effect the combinations on prediction. Here we will fit two different
+linear regression models.
 
 #### Linear model 1
 
@@ -468,159 +509,112 @@ stepwise selection. After choosing the subset of predictors, we will use
 repeated cross-validation with 10 folder and will find the RMSE and R2.
 
 ``` r
-# get all numeric columns
-train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
-test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
-
 # Stepwise model selection
-lmFitSelect <- lm(shares ~ n_tokens_title + n_tokens_content+ is_weekend +  num_hrefs+  num_imgs+ num_videos+num_keywords+ rate_positive_words + title_subjectivity  + I(n_tokens_content^2) + I(num_imgs^2)+ I(num_videos^2) + I(num_hrefs^2) , data = train_df)
-models <- step(lmFitSelect)
+lmFitSelect <- lm(shares ~ n_tokens_title + n_tokens_content+ is_weekend +  num_hrefs+  num_imgs+ num_videos+num_keywords+ rate_positive_words + title_subjectivity  + I(n_tokens_content^2) + I(num_imgs^2)+ I(num_videos^2) + I(num_hrefs^2) + weekday, data = trainData)
+models <- step(lmFitSelect, trace=0)
+summary(models)
 ```
 
-    ## Start:  AIC=95158.43
-    ## shares ~ n_tokens_title + n_tokens_content + is_weekend + num_hrefs + 
-    ##     num_imgs + num_videos + num_keywords + rate_positive_words + 
-    ##     title_subjectivity + I(n_tokens_content^2) + I(num_imgs^2) + 
-    ##     I(num_videos^2) + I(num_hrefs^2)
     ## 
-    ##                         Df Sum of Sq        RSS   AIC
-    ## - I(num_imgs^2)          1      2541 5.5702e+11 95156
-    ## - num_keywords           1    543185 5.5702e+11 95156
-    ## - I(n_tokens_content^2)  1   3183045 5.5702e+11 95156
-    ## - n_tokens_title         1   8222353 5.5703e+11 95157
-    ## - I(num_hrefs^2)         1  55532519 5.5707e+11 95157
-    ## - title_subjectivity     1  78137320 5.5710e+11 95157
-    ## - is_weekend             1 114865055 5.5713e+11 95157
-    ## - num_imgs               1 134496923 5.5715e+11 95158
-    ## - n_tokens_content       1 189650096 5.5721e+11 95158
-    ## <none>                               5.5702e+11 95158
-    ## - num_hrefs              1 278065314 5.5730e+11 95159
-    ## - rate_positive_words    1 442604019 5.5746e+11 95161
-    ## - I(num_videos^2)        1 678156834 5.5770e+11 95163
-    ## - num_videos             1 704867562 5.5772e+11 95163
+    ## Call:
+    ## lm(formula = shares ~ n_tokens_content + num_hrefs + num_imgs + 
+    ##     num_videos + rate_positive_words + I(num_videos^2), data = trainData)
     ## 
-    ## Step:  AIC=95156.43
-    ## shares ~ n_tokens_title + n_tokens_content + is_weekend + num_hrefs + 
-    ##     num_imgs + num_videos + num_keywords + rate_positive_words + 
-    ##     title_subjectivity + I(n_tokens_content^2) + I(num_videos^2) + 
-    ##     I(num_hrefs^2)
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -15432  -1880  -1124    111 655747 
     ## 
-    ##                         Df Sum of Sq        RSS   AIC
-    ## - num_keywords           1    543842 5.5702e+11 95154
-    ## - I(n_tokens_content^2)  1   3213721 5.5702e+11 95154
-    ## - n_tokens_title         1   8225047 5.5703e+11 95155
-    ## - I(num_hrefs^2)         1  55708692 5.5707e+11 95155
-    ## - title_subjectivity     1  78268755 5.5710e+11 95155
-    ## - is_weekend             1 115057131 5.5713e+11 95155
-    ## - n_tokens_content       1 196934758 5.5722e+11 95156
-    ## <none>                               5.5702e+11 95156
-    ## - num_hrefs              1 278149107 5.5730e+11 95157
-    ## - rate_positive_words    1 442856547 5.5746e+11 95159
-    ## - num_imgs               1 584447261 5.5760e+11 95160
-    ## - I(num_videos^2)        1 679648404 5.5770e+11 95161
-    ## - num_videos             1 708261472 5.5773e+11 95161
+    ## Coefficients:
+    ##                      Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)          3387.081    849.643   3.986 6.80e-05 ***
+    ## n_tokens_content        1.247      0.385   3.239  0.00121 ** 
+    ## num_hrefs              84.752     20.420   4.150 3.37e-05 ***
+    ## num_imgs              -62.113     24.118  -2.575  0.01004 *  
+    ## num_videos            369.678    144.703   2.555  0.01066 *  
+    ## rate_positive_words -2207.980   1092.698  -2.021  0.04337 *  
+    ## I(num_videos^2)        -6.953      2.796  -2.487  0.01290 *  
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Step:  AIC=95154.44
-    ## shares ~ n_tokens_title + n_tokens_content + is_weekend + num_hrefs + 
-    ##     num_imgs + num_videos + rate_positive_words + title_subjectivity + 
-    ##     I(n_tokens_content^2) + I(num_videos^2) + I(num_hrefs^2)
+    ## Residual standard error: 10420 on 5135 degrees of freedom
+    ## Multiple R-squared:  0.01246,    Adjusted R-squared:  0.0113 
+    ## F-statistic:  10.8 on 6 and 5135 DF,  p-value: 5.729e-12
+
+``` r
+#lmFitSelectFull <- lm(shares ~ ., data = trainData[-57])
+#models2 <- step(lmFitSelectFull, trace=0)
+```
+
+David - this is the repeat of the first one, but including all the
+variables. Which one should we use? Do we need to stick with the first
+one?
+
+``` r
+lmFitSelectFull <- lm(shares ~ ., data = trainData[-c(1:2,57)])
+models2 <- step(lmFitSelectFull, trace=0)
+summary(models2)
+```
+
     ## 
-    ##                         Df Sum of Sq        RSS   AIC
-    ## - I(n_tokens_content^2)  1   3162527 5.5702e+11 95152
-    ## - n_tokens_title         1   8523510 5.5703e+11 95153
-    ## - I(num_hrefs^2)         1  55166286 5.5707e+11 95153
-    ## - title_subjectivity     1  78176334 5.5710e+11 95153
-    ## - is_weekend             1 116781067 5.5714e+11 95154
-    ## - n_tokens_content       1 198868549 5.5722e+11 95154
-    ## <none>                               5.5702e+11 95154
-    ## - num_hrefs              1 287829338 5.5731e+11 95155
-    ## - rate_positive_words    1 442313054 5.5746e+11 95157
-    ## - num_imgs               1 586579834 5.5761e+11 95158
-    ## - I(num_videos^2)        1 679826637 5.5770e+11 95159
-    ## - num_videos             1 708403646 5.5773e+11 95159
+    ## Call:
+    ## lm(formula = shares ~ n_tokens_content + num_hrefs + num_self_hrefs + 
+    ##     num_imgs + kw_avg_min + kw_avg_max + kw_avg_avg + LDA_00 + 
+    ##     global_rate_positive_words + avg_negative_polarity + min_negative_polarity + 
+    ##     max_negative_polarity + abs_title_subjectivity, data = trainData[-c(1:2, 
+    ##     57)])
     ## 
-    ## Step:  AIC=95152.47
-    ## shares ~ n_tokens_title + n_tokens_content + is_weekend + num_hrefs + 
-    ##     num_imgs + num_videos + rate_positive_words + title_subjectivity + 
-    ##     I(num_videos^2) + I(num_hrefs^2)
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -18929  -1980   -957    334 651080 
     ## 
-    ##                       Df  Sum of Sq        RSS   AIC
-    ## - n_tokens_title       1    8680366 5.5703e+11 95151
-    ## - I(num_hrefs^2)       1   77718938 5.5710e+11 95151
-    ## - title_subjectivity   1   78778294 5.5710e+11 95151
-    ## - is_weekend           1  116245113 5.5714e+11 95152
-    ## <none>                              5.5702e+11 95152
-    ## - num_hrefs            1  301598829 5.5732e+11 95153
-    ## - rate_positive_words  1  439946441 5.5746e+11 95155
-    ## - num_imgs             1  632609400 5.5766e+11 95156
-    ## - I(num_videos^2)      1  676855254 5.5770e+11 95157
-    ## - num_videos           1  705257360 5.5773e+11 95157
-    ## - n_tokens_content     1 1125839062 5.5815e+11 95161
+    ## Coefficients:
+    ##                              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)                 1.921e+03  8.708e+02   2.206 0.027400 *  
+    ## n_tokens_content            2.072e+00  4.383e-01   4.729 2.32e-06 ***
+    ## num_hrefs                   9.096e+01  2.230e+01   4.080 4.58e-05 ***
+    ## num_self_hrefs             -1.184e+02  3.639e+01  -3.253 0.001150 ** 
+    ## num_imgs                   -4.454e+01  2.509e+01  -1.775 0.075898 .  
+    ## kw_avg_min                 -1.106e+00  4.205e-01  -2.630 0.008553 ** 
+    ## kw_avg_max                 -4.099e-03  1.491e-03  -2.749 0.006001 ** 
+    ## kw_avg_avg                  1.004e+00  2.591e-01   3.875 0.000108 ***
+    ## LDA_00                      2.497e+03  1.325e+03   1.884 0.059588 .  
+    ## global_rate_positive_words -2.751e+04  1.015e+04  -2.710 0.006757 ** 
+    ## avg_negative_polarity      -1.241e+04  3.403e+03  -3.647 0.000268 ***
+    ## min_negative_polarity       4.591e+03  1.235e+03   3.718 0.000203 ***
+    ## max_negative_polarity       8.602e+03  2.893e+03   2.974 0.002958 ** 
+    ## abs_title_subjectivity     -1.441e+03  7.703e+02  -1.870 0.061472 .  
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Step:  AIC=95150.55
-    ## shares ~ n_tokens_content + is_weekend + num_hrefs + num_imgs + 
-    ##     num_videos + rate_positive_words + title_subjectivity + I(num_videos^2) + 
-    ##     I(num_hrefs^2)
+    ## Residual standard error: 10380 on 5128 degrees of freedom
+    ## Multiple R-squared:  0.02082,    Adjusted R-squared:  0.01834 
+    ## F-statistic: 8.387 on 13 and 5128 DF,  p-value: < 2.2e-16
+
+``` r
+models2
+```
+
     ## 
-    ##                       Df  Sum of Sq        RSS   AIC
-    ## - I(num_hrefs^2)       1   78431412 5.5711e+11 95149
-    ## - title_subjectivity   1   84447441 5.5712e+11 95149
-    ## - is_weekend           1  116424963 5.5715e+11 95150
-    ## <none>                              5.5703e+11 95151
-    ## - num_hrefs            1  295236822 5.5733e+11 95151
-    ## - rate_positive_words  1  438112308 5.5747e+11 95153
-    ## - num_imgs             1  632770146 5.5766e+11 95154
-    ## - I(num_videos^2)      1  678079259 5.5771e+11 95155
-    ## - num_videos           1  708970195 5.5774e+11 95155
-    ## - n_tokens_content     1 1136905883 5.5817e+11 95159
+    ## Call:
+    ## lm(formula = shares ~ n_tokens_content + num_hrefs + num_self_hrefs + 
+    ##     num_imgs + kw_avg_min + kw_avg_max + kw_avg_avg + LDA_00 + 
+    ##     global_rate_positive_words + avg_negative_polarity + min_negative_polarity + 
+    ##     max_negative_polarity + abs_title_subjectivity, data = trainData[-c(1:2, 
+    ##     57)])
     ## 
-    ## Step:  AIC=95149.27
-    ## shares ~ n_tokens_content + is_weekend + num_hrefs + num_imgs + 
-    ##     num_videos + rate_positive_words + title_subjectivity + I(num_videos^2)
-    ## 
-    ##                       Df  Sum of Sq        RSS   AIC
-    ## - title_subjectivity   1   82010518 5.5719e+11 95148
-    ## - is_weekend           1  102811930 5.5721e+11 95148
-    ## <none>                              5.5711e+11 95149
-    ## - rate_positive_words  1  449202394 5.5756e+11 95151
-    ## - I(num_videos^2)      1  665243097 5.5777e+11 95153
-    ## - num_imgs             1  697298051 5.5781e+11 95154
-    ## - num_videos           1  702088322 5.5781e+11 95154
-    ## - n_tokens_content     1 1109712802 5.5822e+11 95158
-    ## - num_hrefs            1 1755695032 5.5887e+11 95163
-    ## 
-    ## Step:  AIC=95148.03
-    ## shares ~ n_tokens_content + is_weekend + num_hrefs + num_imgs + 
-    ##     num_videos + rate_positive_words + I(num_videos^2)
-    ## 
-    ##                       Df  Sum of Sq        RSS   AIC
-    ## - is_weekend           1  107514189 5.5730e+11 95147
-    ## <none>                              5.5719e+11 95148
-    ## - rate_positive_words  1  443814155 5.5764e+11 95150
-    ## - I(num_videos^2)      1  670650367 5.5786e+11 95152
-    ## - num_imgs             1  698046510 5.5789e+11 95152
-    ## - num_videos           1  712092054 5.5790e+11 95153
-    ## - n_tokens_content     1 1132527465 5.5832e+11 95156
-    ## - num_hrefs            1 1765304830 5.5896e+11 95162
-    ## 
-    ## Step:  AIC=95147.02
-    ## shares ~ n_tokens_content + num_hrefs + num_imgs + num_videos + 
-    ##     rate_positive_words + I(num_videos^2)
-    ## 
-    ##                       Df  Sum of Sq        RSS   AIC
-    ## <none>                              5.5730e+11 95147
-    ## - rate_positive_words  1  443136992 5.5774e+11 95149
-    ## - I(num_videos^2)      1  671461124 5.5797e+11 95151
-    ## - num_videos           1  708336417 5.5801e+11 95152
-    ## - num_imgs             1  719827298 5.5802e+11 95152
-    ## - n_tokens_content     1 1138567644 5.5844e+11 95156
-    ## - num_hrefs            1 1869597333 5.5917e+11 95162
+    ## Coefficients:
+    ##                (Intercept)            n_tokens_content                   num_hrefs              num_self_hrefs                    num_imgs  
+    ##                  1.921e+03                   2.072e+00                   9.096e+01                  -1.184e+02                  -4.454e+01  
+    ##                 kw_avg_min                  kw_avg_max                  kw_avg_avg                      LDA_00  global_rate_positive_words  
+    ##                 -1.106e+00                  -4.099e-03                   1.004e+00                   2.497e+03                  -2.751e+04  
+    ##      avg_negative_polarity       min_negative_polarity       max_negative_polarity      abs_title_subjectivity  
+    ##                 -1.241e+04                   4.591e+03                   8.602e+03                  -1.441e+03
 
 ``` r
 # train data with variables chosen by stepWise
 set.seed(10)
-lm.fit1 <- train(shares ~ num_imgs + num_videos + rate_positive_words + I(n_tokens_content^2) + 
-                        I(num_imgs^2) + I(num_videos^2), data = train_df,
+lm.fit1 <- train(shares ~ num_imgs + num_videos + rate_positive_words + I(num_videos^2) + 
+    I(num_hrefs^2), data = train_df,
                         method="lm",
                         preProcess = c("center","scale"),
                         trControl = trainControl(method = "repeatedcv", number = 10, repeats = 3))
@@ -630,16 +624,45 @@ lm.fit1
 
     ## Linear Regression 
     ## 
-    ## 5142 samples
+    ## 1626 samples
     ##    4 predictor
     ## 
-    ## Pre-processing: centered (6), scaled (6) 
+    ## Pre-processing: centered (5), scaled (5) 
     ## Resampling: Cross-Validated (10 fold, repeated 3 times) 
-    ## Summary of sample sizes: 4628, 4628, 4627, 4628, 4627, 4628, ... 
+    ## Summary of sample sizes: 1464, 1462, 1463, 1464, 1463, 1463, ... 
     ## Resampling results:
     ## 
-    ##   RMSE      Rsquared     MAE     
-    ##   7400.858  0.005991693  2456.292
+    ##   RMSE     Rsquared     MAE     
+    ##   5114.65  0.003422538  2695.364
+    ## 
+    ## Tuning parameter 'intercept' was held constant at a value of TRUE
+
+David - This is again the follow up model fit from all variables.
+
+``` r
+lm.fit3 <- train(shares ~ n_non_stop_unique_tokens + num_hrefs + 
+    num_imgs + num_videos + kw_min_max + kw_max_max + kw_max_avg + 
+    kw_avg_avg + LDA_03 + min_negative_polarity, data = trainData[-c(1:2, 
+    57)],
+                        method="lm",
+                        preProcess = c("center","scale"),
+                        trControl = trainControl(method = "repeatedcv", number = 10, repeats = 3))
+
+lm.fit3
+```
+
+    ## Linear Regression 
+    ## 
+    ## 5142 samples
+    ##   10 predictor
+    ## 
+    ## Pre-processing: centered (10), scaled (10) 
+    ## Resampling: Cross-Validated (10 fold, repeated 3 times) 
+    ## Summary of sample sizes: 4628, 4628, 4628, 4628, 4629, 4627, ... 
+    ## Resampling results:
+    ## 
+    ##   RMSE      Rsquared   MAE     
+    ##   7241.473  0.0231472  2447.822
     ## 
     ## Tuning parameter 'intercept' was held constant at a value of TRUE
 
@@ -686,6 +709,35 @@ lm.fit2
     ##            3.181e-04             2.691e-01            -1.618e-03             3.462e-02
 
 ``` r
+# David- With train function. - It is upto you which one you use. Dr. P was emphasizing using cross validation, so I just added here so that you can choose.
+
+lm.fit4 <- train(log(shares) ~ n_tokens_content + num_hrefs + average_token_length + 
+                        num_keywords + kw_min_min + kw_max_avg + kw_avg_avg + 
+                        is_weekend + LDA_04 + global_subjectivity, 
+          data = train_df,
+                        method="lm",
+                        preProcess = c("center","scale"),
+                        trControl = trainControl(method = "repeatedcv", number = 10, repeats = 3))
+
+lm.fit4
+```
+
+    ## Linear Regression 
+    ## 
+    ## 5142 samples
+    ##   10 predictor
+    ## 
+    ## Pre-processing: centered (10), scaled (10) 
+    ## Resampling: Cross-Validated (10 fold, repeated 3 times) 
+    ## Summary of sample sizes: 4627, 4628, 4629, 4627, 4628, 4629, ... 
+    ## Resampling results:
+    ## 
+    ##   RMSE       Rsquared    MAE      
+    ##   0.7847666  0.07364947  0.5982122
+    ## 
+    ## Tuning parameter 'intercept' was held constant at a value of TRUE
+
+``` r
 #predict on test data
 #predLm2 <- predict(lm.fit2, test_df)
 
@@ -694,22 +746,49 @@ lm.fit2
 #rmseLm2
 ```
 
-### Ensemble Tree
+### Ensemble Tree-based model
 
-place holder
+Tree-based method splits up response variable into subsets based on
+their relationship to one or more predictor variables. Because it is
+easy to understand and interpret output and no statistical assumptions
+is necessary, regression tree (continuous variable) and classification
+tree (group membership) are commonly used. However, these models are
+influenced vastly even there is a small changes in the data. Therefore,
+Ensemble tree-based model are highly used in machine learning to gain
+strong prediction even though it lose interpretability because it get
+rid of variation of data set to data set and average of predication for
+a final prediction. In this project, we will use the two of most
+commonly used ensemble methods: Random Forests and Boosting.
 
 #### Random Forest Model
+
+Random Forest method, which shares the idea of bagging, but extends the
+idea and only include random subset of predictors for each bootstrap
+sample/tree fit instead of including every predictor in each of the
+tree. In doing so, one or two good predictors won’t dominate the tree
+fit. Random forest method use mtry as tuning parameter and the number of
+randomly selected predictor is obtained using *m* = *p*/3 formula (p as
+the number of predictors). Below, you will see the result of training
+with the random forest method. By choosing randomly selected subset of
+predictors in each tree, we will possibly reduce the correlation and
+gain stronger prediction.
 
 ``` r
 # get all numeric columns
 train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
 test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
-# tuning parameter is mtry, use values of 1,2,..,5
-rfFit <- train(shares ~ .,
-               data = train_df, 
+# tuning parameter is mtry, use values of 1,2,..,10
+rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
+                 n_unique_tokens+avg_positive_polarity+
+                 avg_negative_polarity + num_hrefs +  num_imgs +
+                 num_videos + num_keywords + title_sentiment_polarity +
+                 rate_positive_words + rate_negative_words +
+                 title_subjectivity + weekday,
+               data = trainData, 
                method = "rf", 
+               trControl = trainControl(method = "cv", number = 5),
                preProcess = c("center", "scale"),
-               tuneGrid = data.frame(mtry = (1:5)))
+               tuneGrid = data.frame(mtry = (1:10)))
 
 rfFit
 ```
@@ -717,19 +796,24 @@ rfFit
     ## Random Forest 
     ## 
     ## 5142 samples
-    ##   53 predictor
+    ##   14 predictor
     ## 
-    ## Pre-processing: centered (53), scaled (53) 
-    ## Resampling: Bootstrapped (25 reps) 
-    ## Summary of sample sizes: 5142, 5142, 5142, 5142, 5142, 5142, ... 
+    ## Pre-processing: centered (19), scaled (19) 
+    ## Resampling: Cross-Validated (5 fold) 
+    ## Summary of sample sizes: 4113, 4115, 4113, 4113, 4114 
     ## Resampling results across tuning parameters:
     ## 
-    ##   mtry  RMSE      Rsquared    MAE     
-    ##   1     8915.160  0.01690544  2415.040
-    ##   2     8966.756  0.01653146  2465.924
-    ##   3     9010.465  0.01657506  2493.658
-    ##   4     9083.370  0.01441410  2514.909
-    ##   5     9153.187  0.01335401  2537.108
+    ##   mtry  RMSE      Rsquared     MAE     
+    ##    1    8028.596  0.013383509  2429.577
+    ##    2    8084.527  0.015516913  2473.516
+    ##    3    8201.468  0.009891838  2514.773
+    ##    4    8216.529  0.011978079  2534.004
+    ##    5    8287.818  0.008783067  2554.360
+    ##    6    8404.840  0.007139232  2574.205
+    ##    7    8443.885  0.007019037  2593.872
+    ##    8    8568.722  0.006085916  2612.189
+    ##    9    8511.948  0.007035119  2606.310
+    ##   10    8661.138  0.006182034  2630.728
     ## 
     ## RMSE was used to select the optimal model using the smallest value.
     ## The final value used for the model was mtry = 1.
@@ -772,7 +856,7 @@ boostFit$bestTune
 ```
 
     ##   n.trees interaction.depth shrinkage n.minobsinnode
-    ## 8     100                 3       0.1             10
+    ## 4      50                 2       0.1             10
 
 ``` r
 # evaluate on test dataset
@@ -780,6 +864,9 @@ boostFit$bestTune
 #boostRMSE <- sqrt(mean((boostPred-test_df$shares)^2))
 #boostRMSE
 ```
+
+David- are you going to use tuneGrid? You created one, but didn’t
+include in the model.
 
 ## Comparison
 
@@ -790,16 +877,16 @@ were compared.
 ``` r
 # Predict on test data
 
-predLm1 <- predict(lm.fit1, newdata = test_df)
+predLm1 <- predict(lm.fit1, newdata = trainData)
 predLm2 <- predict(lm.fit2, newdata = test_df)
-rfPred <- predict(rfFit, newdata = test_df)
+rfPred <- predict(rfFit, newdata = trainData)
 boostPred <- predict(boostFit, newdata = test_df)
 
 # Calculate rmse
 
-rmseLm1 <- sqrt(mean((predLm1 - test_df$shares)^2))
+rmseLm1 <- sqrt(mean((predLm1 - trainData$shares)^2))
 rmseLm2 <- sqrt(mean((predLm2 - test_df$shares)^2))
-rfMSE <- sqrt(mean((rfPred - test_df$shares)^2))
+rfMSE <- sqrt(mean((rfPred - trainData$shares)^2))
 boostRMSE <- sqrt(mean((boostPred - test_df$shares)^2))
 
 rmseTotal <- data.frame('Linear Regression Model 1' = rmseLm1, 
@@ -813,11 +900,14 @@ knitr::kable(t(rmseTotal),
                col.names = "RMSE")
 ```
 
-|                           |     RMSE |
-|:--------------------------|---------:|
-| Linear.Regression.Model.1 | 3909.377 |
-| Linear.Regression.Model.2 | 4891.183 |
-| Random.Forest.Model       | 3851.016 |
-| Boosting.Model            | 4666.606 |
+|                           |      RMSE |
+|:--------------------------|----------:|
+| Linear.Regression.Model.1 | 10489.828 |
+| Linear.Regression.Model.2 |  4891.183 |
+| Random.Forest.Model       |  7735.416 |
+| Boosting.Model            |  4304.990 |
 
 Summary Table of RMSE score
+
+David- I did this part because I will definitely need help on automation
+if I do it.
