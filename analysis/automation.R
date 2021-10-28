@@ -7,7 +7,7 @@ channel_list <- list('lifestyle',
                      'world')
 
 # a shortened list of channels so we can test rendering
-channel_list <- list('bus')
+#channel_list <- list('bus')
 
 # render analysis for each channel
 for (channel in channel_list) {
