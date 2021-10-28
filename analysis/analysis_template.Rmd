@@ -570,6 +570,7 @@ knitr::kable(t(rmseTotal),
 winningModel <- ifelse((rmseLm1 < rmseLm2) & (rmseLm1 < rfMSE) & (rmseLm1 < boostRMSE), 'Linear Model 1', 
        ifelse((rmseLm2 < rfMSE) & (rmseLm2 < boostRMSE), 'Linear Model 2',
        ifelse(rfMSE < boostRMSE, 'Random Forest', 'Boosted Tree')))
-paste('The Winning Model is:', paste0(winningModel, '!'))
+lowestrmse <- min(rmseLm1, rmseLm2, rfMSE, boostRMSE)
+paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', round(lowestrmse, 2))
 
 ```

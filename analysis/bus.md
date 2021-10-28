@@ -230,7 +230,7 @@ trainData %>% ggplot(aes(x=weekday, y=shares)) +
         ggtitle('Day of Week and Total Number of Shares')
 ```
 
-![](bus_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](bus_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 While the summary statistic by day of week table shows the breakdown
 information, the above bar plot visually shows a count of the total
@@ -275,7 +275,7 @@ ggplot(data = trainData, aes(x = weekday)) +
   scale_fill_discrete(name = "Popularity") 
 ```
 
-![](bus_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](bus_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 The bar plot above shows a breakdown of the number of articles published
 vs day of week. We can also see a breakdown of the proportion of
@@ -300,7 +300,7 @@ g2 <- trainData %>% ggplot(aes(x=num_hrefs, y=shares)) +
 g2
 ```
 
-![](bus_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](bus_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 In the above scatter, we compare the number of links in an article to
 its shares. This plot is motivated by the implementation of Google’s
@@ -323,7 +323,7 @@ ggplot(trainData, aes(x = weekday,
   scale_fill_discrete(name = "Day of week") 
 ```
 
-![](bus_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](bus_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 In the above box plot, we look at how the number of link in an article
 by day of week. When the median line of weekend are lower than weekday,
@@ -356,7 +356,7 @@ g4 <- ggplot(data = trainData, aes(x =  n_tokens_content,
 plot_grid(g3, g4,  labels = c('A', 'B'))   
 ```
 
-![](bus_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](bus_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 Scatter plot A shows the number of words in the title compared to the
 number of shares. Scatter plot B shows a comparison of the number of
@@ -382,7 +382,7 @@ ggplot(data = trainData, aes(x =  n_unique_tokens,
       ylim(0, 10000) 
 ```
 
-![](bus_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](bus_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 ``` r
   geom_smooth(method = lm)
@@ -483,7 +483,7 @@ plot_grid(g5, g6,  labels = c('C', 'D'))
     ## `geom_smooth()` using formula 'y ~ x'
     ## `geom_smooth()` using formula 'y ~ x'
 
-![](bus_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](bus_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 In these scatter plots, we compare the number of images/videos to the
 number of shares. As a reader, when I see interesting images and videos
@@ -507,7 +507,7 @@ ggplot(data = trainData, aes(x =  num_keywords,
 
     ## `geom_smooth()` using formula 'y ~ x'
 
-![](bus_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](bus_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 In above plot, we compare the number of keywords that appear in an
 article to the number of shares. Across channels, there does not appear
@@ -541,7 +541,7 @@ plot_grid(g7, g8,  labels = c('A', 'B'))
     ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
     ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
 
-![](bus_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](bus_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 In above scatter plots, we compare the positive/negative rate of words
 that appear in an article to the number of shares of an article. If the
@@ -565,7 +565,7 @@ ggplot(data = trainData, aes(x =     title_subjectivity,
       ggtitle("Title subjectivity")
 ```
 
-![](bus_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](bus_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 In the title subjectivity scatter plot, we compare title subjectivity to
 the number of shares. Across channels, there does not seem to be a
@@ -597,7 +597,7 @@ plot_grid(g9, g10,  labels = c('A', 'B'))
     ## `geom_smooth()` using formula 'y ~ x'
     ## `geom_smooth()` using formula 'y ~ x'
 
-![](bus_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](bus_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 In the above plots, we compare the average polarity of positive/negative
 words that appear in the article to the number of shares. If there is a
@@ -634,7 +634,7 @@ df_tmp <- trainData %>% select(c('n_tokens_title',
 corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
 ```
 
-![](bus_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](bus_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 Above shows the correlation matrix for the numerical variables we
 explore in EDA. Shares is the bottom row. We use this plot to find the
@@ -1022,7 +1022,8 @@ Summary Table of RMSE score
 winningModel <- ifelse((rmseLm1 < rmseLm2) & (rmseLm1 < rfMSE) & (rmseLm1 < boostRMSE), 'Linear Model 1', 
        ifelse((rmseLm2 < rfMSE) & (rmseLm2 < boostRMSE), 'Linear Model 2',
        ifelse(rfMSE < boostRMSE, 'Random Forest', 'Boosted Tree')))
-paste('The Winning Model is:', paste0(winningModel, '!'))
+lowestrmse <- min(rmseLm1, rmseLm2, rfMSE, boostRMSE)
+paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', round(lowestrmse, 2))
 ```
 
-    ## [1] "The Winning Model is: Boosted Tree!"
+    ## [1] "The Winning Model is: Boosted Tree! Its RMSE value is 15962.27"
