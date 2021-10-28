@@ -5,9 +5,33 @@ Bus
 -   [Data manipulaton](#data-manipulaton)
 -   [Summarizations](#summarizations)
     -   [Exploratory Data Anaysis](#exploratory-data-anaysis)
+        -   [Shares by day of week](#shares-by-day-of-week)
+        -   [Shares by popularity](#shares-by-popularity)
+        -   [Count of news by popularity over different day of
+            week](#count-of-news-by-popularity-over-different-day-of-week)
+        -   [Shares by number of links](#shares-by-number-of-links)
+        -   [Number of link by day of
+            week](#number-of-link-by-day-of-week)
+        -   [Number of words in the title and
+            content](#number-of-words-in-the-title-and-content)
+        -   [Unique words count](#unique-words-count)
+        -   [Number of image and video](#number-of-image-and-video)
+        -   [Number of keywords](#number-of-keywords)
+        -   [Number of positive and negative words
+            rate](#number-of-positive-and-negative-words-rate)
+        -   [Title subjectivity](#title-subjectivity)
+        -   [Number of average positive and negative
+            polarity](#number-of-average-positive-and-negative-polarity)
+        -   [Correlation with numeric
+            variables](#correlation-with-numeric-variables)
 -   [Modeling](#modeling)
     -   [Linear Regression](#linear-regression)
+        -   [Linear model 1](#linear-model-1)
+        -   [Linear model 2 - Logarithmic Linear
+            Regression](#linear-model-2---logarithmic-linear-regression)
     -   [Ensemble Tree-based model](#ensemble-tree-based-model)
+        -   [Random Forest Model](#random-forest-model)
+        -   [Boosted Tree Model](#boosted-tree-model)
 -   [Comparison](#comparison)
 
 ## Intro
@@ -22,23 +46,33 @@ obtains). This work could also be integrated in the calculation of
 advertisement space on articles (articles that receive more shares
 should demand more for ad space).
 
-The characteristics we will explore include day of week, number of
-links, word count of title, word count of content
+The characteristics we will explore include:
 
 -   `weekday`: day of week that article was published (Monday, Tuesday,
     …)
 -   `num_hrefs`: number of links referenced in article
+-   `num_imgs`: number of images in article
+-   `num_videos`: number of videos in article
 -   `n_tokens_title`: word count of title
 -   `n_tokens_content`: word count of article
+-   `n_unique_tokens`: number of unique words in article
 -   `rate_positive_words` and `rate_negative_words`: rate of
     positive/negative words among non-neutral tokens
--   
--   
--   
--   
+-   `title_subjectivity`: subjectivity of title
+-   `avg_positive_polarity` and `avg_negative_polarity`: average
+    polarity of positive/negative words in article
 
-The models used to build … continue from here Data was split by channel
-type…
+In the model building section, we explore 4 unique models: OLS,
+logarithmic linear regression, random forest tree, and a boosted tree.
+These models are trained using cross validation on a training dataset
+that is 80% of the original dataset. These models are compared using
+metric scores from results of predictions on test set.
+
+Lastly, all summarizations and models are generated after splitting by
+data channel. For example, on the lifestyle page, all EDA and model
+building is using data that is filtered by articles that come from the
+lifestyle channel. Splitting sections this way causes us to generalize
+descriptions.
 
 The following packages are required:
 
@@ -876,7 +910,44 @@ boostFit <- train(shares ~ .,
                 verbose = FALSE,
                 tuneGrid = gbmGrid
                 )
+boostFit
+```
 
+    ## Stochastic Gradient Boosting 
+    ## 
+    ## 4380 samples
+    ##   53 predictor
+    ## 
+    ## No pre-processing
+    ## Resampling: Cross-Validated (5 fold) 
+    ## Summary of sample sizes: 3503, 3504, 3504, 3505, 3504 
+    ## Resampling results across tuning parameters:
+    ## 
+    ##   interaction.depth  n.trees  RMSE      Rsquared    MAE     
+    ##   1                   25      12852.36  0.02341590  2878.357
+    ##   1                   50      13013.47  0.02102893  2961.765
+    ##   1                  100      13095.54  0.01864372  2991.210
+    ##   1                  150      13082.17  0.01977425  2959.315
+    ##   1                  200      13106.08  0.02284468  2985.821
+    ##   5                   25      12814.90  0.03756190  2868.985
+    ##   5                   50      12895.21  0.03653894  2885.755
+    ##   5                  100      13069.21  0.03534317  2999.694
+    ##   5                  150      13170.55  0.03878785  3059.664
+    ##   5                  200      13232.50  0.04035895  3104.337
+    ##   9                   25      12881.64  0.03029232  2850.327
+    ##   9                   50      12995.93  0.02687063  2913.235
+    ##   9                  100      13157.40  0.02452744  3082.875
+    ##   9                  150      13273.66  0.02750427  3159.341
+    ##   9                  200      13440.51  0.02292434  3245.545
+    ## 
+    ## Tuning parameter 'shrinkage' was held constant at a value of 0.1
+    ## Tuning parameter 'n.minobsinnode'
+    ##  was held constant at a value of 20
+    ## RMSE was used to select the optimal model using the smallest value.
+    ## The final values used for the model were n.trees = 25, interaction.depth = 5, shrinkage = 0.1
+    ##  and n.minobsinnode = 20.
+
+``` r
 # Re-train using best hyperparameter value
 boostFit <- train(shares ~ .,
                 data = train_df,

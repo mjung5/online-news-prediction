@@ -2,7 +2,7 @@
 output: 
   github_document:
     toc: true
-    toc_depth: 3
+    toc_depth: 4
     html_preview: false
 params: 
     channel: bus
@@ -25,20 +25,22 @@ library(cowplot)
 ## Intro
 This project aims at building predictive models on the [Online News Popularity](https://archive.ics.uci.edu/ml/datasets/Online+News+Popularity#) dataset. Our goal is to build models that predict the number of shares an article receives based on characteristics of the article. This work is important to help writers/companies understand factors that influence article success (as measured by the number of shares an article obtains). This work could also be integrated in the calculation of advertisement space on articles (articles that receive more shares should demand more for ad space). 
 
-The characteristics we will explore include day of week, number of links, word count of title, word count of content
+The characteristics we will explore include:
 
 + `weekday`: day of week that article was published (Monday, Tuesday, ...)
 + `num_hrefs`: number of links referenced in article
++ `num_imgs`: number of images in article
++ `num_videos`: number of videos in article
 + `n_tokens_title`: word count of title
 + `n_tokens_content`: word count of article
++ `n_unique_tokens`: number of unique words in article
 + `rate_positive_words` and `rate_negative_words`: rate of positive/negative words among non-neutral tokens
-+ 
-+ 
-+ 
-+ 
++ `title_subjectivity`: subjectivity of title
++ `avg_positive_polarity` and `avg_negative_polarity`: average polarity of positive/negative words in article
 
-The models used to build ... continue from here
-Data was split by channel type...
+In the model building section, we explore 4 unique models: OLS, logarithmic linear regression, random forest tree, and a boosted tree. These models are trained using cross validation on a training dataset that is 80% of the original dataset. These models are compared using metric scores from results of predictions on test set.
+
+Lastly, all summarizations and models are generated after splitting by data channel. For example, on the lifestyle page, all EDA and model building is using data that is filtered by articles that come from the lifestyle channel. Splitting sections this way causes us to generalize descriptions.
 
 The following packages are required:
 ```{r, eval=FALSE}
@@ -524,6 +526,7 @@ boostFit <- train(shares ~ .,
                 verbose = FALSE,
                 tuneGrid = gbmGrid
                 )
+boostFit
 
 # Re-train using best hyperparameter value
 boostFit <- train(shares ~ .,
