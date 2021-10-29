@@ -12,7 +12,7 @@ This project requires the following packages:
 `gbm`
 `leaps`
 `caret`
-`cowplot`
+`cowplot`.
 
 ## Analysis
 * [Business](analysis/bus.md)
