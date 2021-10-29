@@ -102,10 +102,10 @@ df <- read_csv('data/OnlineNewsPopularity.csv') %>%
 
     ## Rows: 39644 Columns: 61
 
-    ## -- Column specification ------------------------------------------------------------------------------------------------------------------------------------
+    ## -- Column specification -------------------------------------------------------
     ## Delimiter: ","
     ## chr  (1): url
-    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_unique_tokens, num_hrefs, num_self_hrefs, num_imgs,...
+    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_n...
 
     ## 
     ## i Use `spec()` to retrieve the full column specification for this data.
@@ -229,7 +229,7 @@ trainData %>% ggplot(aes(x=weekday, y=shares)) +
        title = "Day of Week and Total Number of Shares") 
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 While the summary statistic by day of week table shows the breakdown
 information, the above bar plot visually shows a count of the total
@@ -245,7 +245,8 @@ and do more leisure activities.
 # Summary statistics by popularity
 trainData %>% 
   group_by(Popularity) %>%
-  summarise(Total_shares = sum(shares), Avg_shares = round(mean(shares)),                     Median_shares = median(shares), IQR = IQR(shares)) %>%
+  summarise(Total_shares = sum(shares), Avg_shares = round(mean(shares)), 
+            Median_shares = median(shares), IQR = IQR(shares)) %>%
   knitr::kable()
 ```
 
@@ -274,7 +275,7 @@ ggplot(data = trainData, aes(x = weekday)) +
   scale_fill_discrete(name = "Popularity") 
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 The bar plot above shows a breakdown of the number of articles published
 vs day of week. We can also see a breakdown of the proportion of
@@ -299,7 +300,7 @@ g2 <- trainData %>% ggplot(aes(x=num_hrefs, y=shares)) +
 g2
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 In the above scatter, we compare the number of links in an article to
 its shares. This plot is motivated by the implementation of Google’s
@@ -322,7 +323,7 @@ ggplot(trainData, aes(x = weekday,
   scale_fill_discrete(name = "Day of week") 
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 In the above box plot, we look at how the number of link in an article
 by day of week. When the median line of weekend are lower than weekday,
@@ -354,7 +355,7 @@ g4 <- ggplot(data = trainData, aes(x =  n_tokens_content,
 plot_grid(g3, g4,  labels = c('A', 'B'))   
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 Scatter plot A shows the number of words in the title compared to the
 number of shares. Scatter plot B shows a comparison of the number of
@@ -377,10 +378,10 @@ ggplot(data = trainData, aes(x =  n_unique_tokens,
       geom_point(alpha = 0.50) + 
       ggtitle("Unique Word count") +
       ylim(0, 10000) + 
-      geom_smooth(method = lm)
+      geom_smooth()
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 Above, we see a plot of the number of unique words in each article
 compared to the number of shares. Across channels, there does not seem
@@ -409,7 +410,7 @@ g6 <- ggplot(data = trainData, aes(x =  num_videos,
 plot_grid(g5, g6,  labels = c('C', 'D')) 
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 In these scatter plots, we compare the number of images/videos to the
 number of shares. As a reader, when I see interesting images and videos
@@ -431,7 +432,7 @@ ggplot(data = trainData, aes(x =  num_keywords,
       geom_smooth(method = lm)
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 In above plot, we compare the number of keywords that appear in an
 article to the number of shares. Across channels, there does not appear
@@ -462,7 +463,7 @@ g8 <- ggplot(data = trainData, aes(x =  rate_negative_words,
 plot_grid(g7, g8,  labels = c('A', 'B')) 
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 In above scatter plots, we compare the positive/negative rate of words
 that appear in an article to the number of shares of an article. If the
@@ -485,7 +486,7 @@ ggplot(data = trainData, aes(x =     title_subjectivity,
       geom_smooth()
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 In the title subjectivity scatter plot, we compare title subjectivity to
 the number of shares. Across channels, there does not seem to be a
@@ -514,10 +515,7 @@ g10 <- ggplot(data = trainData, aes(x =  avg_negative_polarity,
 plot_grid(g9, g10,  labels = c('A', 'B')) 
 ```
 
-    ## `geom_smooth()` using formula 'y ~ x'
-    ## `geom_smooth()` using formula 'y ~ x'
-
-![](socmed_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 In the above plots, we compare the average polarity of positive/negative
 words that appear in the article to the number of shares. If there is a
@@ -554,7 +552,7 @@ df_tmp <- trainData %>% select(c('n_tokens_title',
 corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 Above shows the correlation matrix for the numerical variables we
 explore in EDA. Shares is the bottom row. We use this plot to find the
@@ -854,9 +852,7 @@ winningModel <- ifelse((rmseLm1 < rmseLm2) & (rmseLm1 < rfMSE) & (rmseLm1 < boos
        ifelse((rmseLm2 < rfMSE) & (rmseLm2 < boostRMSE), 'Linear Model 2',
        ifelse(rfMSE < boostRMSE, 'Random Forest', 'Boosted Tree')))
 lowestrmse <- min(rmseLm1, rmseLm2, rfMSE, boostRMSE)
-paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', round(lowestrmse, 2))
+#paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', round(lowestrmse, 2))
 ```
-
-    ## [1] "The Winning Model is: Random Forest! Its RMSE value is 6081.69"
 
 The winning model is Random Forest. Its RMSE value is 6081.69.

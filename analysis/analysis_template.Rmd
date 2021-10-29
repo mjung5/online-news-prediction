@@ -169,7 +169,8 @@ While the summary statistic by day of week table shows the breakdown information
 # Summary statistics by popularity
 trainData %>% 
   group_by(Popularity) %>%
-  summarise(Total_shares = sum(shares), Avg_shares = round(mean(shares)),                     Median_shares = median(shares), IQR = IQR(shares)) %>%
+  summarise(Total_shares = sum(shares), Avg_shares = round(mean(shares)), 
+            Median_shares = median(shares), IQR = IQR(shares)) %>%
   knitr::kable()
 ```
 
@@ -256,7 +257,7 @@ ggplot(data = trainData, aes(x =  n_unique_tokens,
       geom_point(alpha = 0.50) + 
       ggtitle("Unique Word count") +
       ylim(0, 10000) + 
-      geom_smooth(method = lm)
+      geom_smooth()
 ```
 
 Above, we see a plot of the number of unique words in each article compared to the number of shares. Across channels, there does not seem to be a strong linear correlation between these two variables. However, this variable may have significance in tree based models.
@@ -336,7 +337,7 @@ In the title subjectivity scatter plot, we compare title subjectivity to the num
 
 #### Number of average positive and negative polarity
 
-```{r}
+```{r message=FALSE}
 # Scatter plot of average positive polarity
 g9 <- ggplot(data = trainData, aes(x =  avg_positive_polarity, 
                       y = shares)) +
@@ -560,7 +561,7 @@ winningModel <- ifelse((rmseLm1 < rmseLm2) & (rmseLm1 < rfMSE) & (rmseLm1 < boos
        ifelse((rmseLm2 < rfMSE) & (rmseLm2 < boostRMSE), 'Linear Model 2',
        ifelse(rfMSE < boostRMSE, 'Random Forest', 'Boosted Tree')))
 lowestrmse <- min(rmseLm1, rmseLm2, rfMSE, boostRMSE)
-paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', round(lowestrmse, 2))
+#paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', round(lowestrmse, 2))
 ```
 
 The winning model is `r winningModel`. Its RMSE value is `r round(lowestrmse, 2)`.
