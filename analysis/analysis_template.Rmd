@@ -300,7 +300,7 @@ In above plot, we compare the number of keywords that appear in an article to th
 
 #### Number of positive and negative words rate
 
-```{r}
+```{r message=FALSE}
 # Scatter plot of positive words rate
 g7 <- ggplot(data = trainData, aes(x =  rate_positive_words, 
                       y = shares)) +
@@ -323,12 +323,12 @@ In above scatter plots, we compare the positive/negative rate of words that appe
 
 #### Title subjectivity
 
-```{r}
+```{r message=FALSE}
 # Scatter plot of title subjectivity
 ggplot(data = trainData, aes(x =     title_subjectivity, 
                       y = shares)) +
       geom_point(alpha = 0.50) +
-      ggtitle("Title subjectivity")
+      ggtitle("Title subjectivity") +
       geom_smooth()
 ```
 
@@ -468,7 +468,6 @@ rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
                  trControl = trainControl(method = "cv", number = 5),
                  preProcess = c("center", "scale"),
                  tuneGrid = data.frame(mtry = (1:4)))
-rfFit
 
 # Re-train using best hyperparameter value
 rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
@@ -513,7 +512,6 @@ boostFit <- train(shares ~ .,
                 verbose = FALSE,
                 tuneGrid = gbmGrid
                 )
-boostFit
 
 # Re-train using best hyperparameter value
 boostFit <- train(shares ~ .,
@@ -556,7 +554,7 @@ knitr::kable(t(rmseTotal),
                col.names = "RMSE")
 ```
 
-```{r}
+```{r message=FALSE}
 # Finding the best model for each channel
 winningModel <- ifelse((rmseLm1 < rmseLm2) & (rmseLm1 < rfMSE) & (rmseLm1 < boostRMSE), 'Linear Model 1', 
        ifelse((rmseLm2 < rfMSE) & (rmseLm2 < boostRMSE), 'Linear Model 2',
@@ -565,4 +563,4 @@ lowestrmse <- min(rmseLm1, rmseLm2, rfMSE, boostRMSE)
 paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', round(lowestrmse, 2))
 ```
 
-The winning model is `r winningModel` for `r channel` data. Its RMSE value is `r round(lowestrmse, 2)`.
+The winning model is `r winningModel`. Its RMSE value is `r round(lowestrmse, 2)`.

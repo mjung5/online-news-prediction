@@ -462,9 +462,6 @@ g8 <- ggplot(data = trainData, aes(x =  rate_negative_words,
 plot_grid(g7, g8,  labels = c('A', 'B')) 
 ```
 
-    ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
-    ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
-
 ![](socmed_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 In above scatter plots, we compare the positive/negative rate of words
@@ -484,18 +481,11 @@ different channels.
 ggplot(data = trainData, aes(x =     title_subjectivity, 
                       y = shares)) +
       geom_point(alpha = 0.50) +
-      ggtitle("Title subjectivity")
-```
-
-![](socmed_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
-
-``` r
+      ggtitle("Title subjectivity") +
       geom_smooth()
 ```
 
-    ## geom_smooth: na.rm = FALSE, orientation = NA, se = TRUE
-    ## stat_smooth: na.rm = FALSE, orientation = NA, se = TRUE
-    ## position_identity
+![](socmed_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 In the title subjectivity scatter plot, we compare title subjectivity to
 the number of shares. Across channels, there does not seem to be a
@@ -719,29 +709,7 @@ rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
                  trControl = trainControl(method = "cv", number = 5),
                  preProcess = c("center", "scale"),
                  tuneGrid = data.frame(mtry = (1:4)))
-rfFit
-```
 
-    ## Random Forest 
-    ## 
-    ## 1626 samples
-    ##   14 predictor
-    ## 
-    ## Pre-processing: centered (19), scaled (19) 
-    ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 1299, 1301, 1302, 1301, 1301 
-    ## Resampling results across tuning parameters:
-    ## 
-    ##   mtry  RMSE      Rsquared    MAE     
-    ##   1     5051.499  0.02557691  2658.749
-    ##   2     5071.770  0.02458018  2723.819
-    ##   3     5086.109  0.02550671  2755.124
-    ##   4     5110.232  0.02392622  2780.734
-    ## 
-    ## RMSE was used to select the optimal model using the smallest value.
-    ## The final value used for the model was mtry = 1.
-
-``` r
 # Re-train using best hyperparameter value
 rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
                  n_unique_tokens+avg_positive_polarity+
@@ -808,42 +776,7 @@ boostFit <- train(shares ~ .,
                 verbose = FALSE,
                 tuneGrid = gbmGrid
                 )
-boostFit
-```
 
-    ## Stochastic Gradient Boosting 
-    ## 
-    ## 1626 samples
-    ##   53 predictor
-    ## 
-    ## No pre-processing
-    ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 1300, 1301, 1302, 1301, 1300 
-    ## Resampling results across tuning parameters:
-    ## 
-    ##   interaction.depth  n.trees  RMSE      Rsquared    MAE     
-    ##   1                   25      5078.913  0.06393360  2566.531
-    ##   1                   50      5058.996  0.07360485  2565.993
-    ##   1                  100      5060.265  0.07142505  2564.052
-    ##   1                  150      5050.655  0.07601464  2560.556
-    ##   1                  200      5049.747  0.07618369  2567.085
-    ##   5                   25      5046.621  0.08016790  2553.820
-    ##   5                   50      5052.413  0.08318932  2562.556
-    ##   5                  100      5101.692  0.08043340  2665.056
-    ##   5                  150      5162.609  0.07082911  2748.133
-    ##   5                  200      5207.898  0.06810220  2816.448
-    ##   9                   25      4998.306  0.08992975  2517.779
-    ##   9                   50      4963.191  0.10312085  2554.539
-    ##   9                  100      5062.551  0.08723332  2652.282
-    ##   9                  150      5084.100  0.08979770  2708.269
-    ##   9                  200      5137.383  0.08231406  2775.017
-    ## 
-    ## Tuning parameter 'shrinkage' was held constant at a value of 0.1
-    ## Tuning parameter 'n.minobsinnode' was held constant at a value of 20
-    ## RMSE was used to select the optimal model using the smallest value.
-    ## The final values used for the model were n.trees = 50, interaction.depth = 9, shrinkage = 0.1 and n.minobsinnode = 20.
-
-``` r
 # Re-train using best hyperparameter value
 boostFit <- train(shares ~ .,
                 data = train_df,
@@ -926,5 +859,4 @@ paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', r
 
     ## [1] "The Winning Model is: Random Forest! Its RMSE value is 6081.69"
 
-The winning model is Random Forest for socmed data. Its RMSE value is
-6081.69.
+The winning model is Random Forest. Its RMSE value is 6081.69.
