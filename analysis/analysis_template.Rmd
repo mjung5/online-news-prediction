@@ -31,6 +31,7 @@ The characteristics we will explore include:
 + `num_hrefs`: number of links referenced in article
 + `num_imgs`: number of images in article
 + `num_videos`: number of videos in article
++ `num_keywords`: number of keywords in the article
 + `n_tokens_title`: word count of title
 + `n_tokens_content`: word count of article
 + `n_unique_tokens`: number of unique words in article
@@ -57,7 +58,7 @@ library(cowplot)
 
 We read in the online news popularity data and subset the data by data_channel_is*(one of six groups).
 
-```{r 1_readData}
+```{r 1_readData, message=FALSE}
 # read entire dataset
   # subset to get the data channel we want
     # remove unnessary columns

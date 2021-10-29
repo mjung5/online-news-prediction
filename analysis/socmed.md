@@ -53,6 +53,7 @@ The characteristics we will explore include:
 -   `num_hrefs`: number of links referenced in article
 -   `num_imgs`: number of images in article
 -   `num_videos`: number of videos in article
+-   `num_keywords`: number of keywords in the article
 -   `n_tokens_title`: word count of title
 -   `n_tokens_content`: word count of article
 -   `n_unique_tokens`: number of unique words in article
@@ -98,20 +99,7 @@ data\_channel\_is\*(one of six groups).
 df <- read_csv('data/OnlineNewsPopularity.csv') %>%
         filter((!!sym(paste0('data_channel_is_', params$channel))) == 1) %>%
           select(-contains('data_channel_is'))
-```
 
-    ## Rows: 39644 Columns: 61
-
-    ## -- Column specification -------------------------------------------------------
-    ## Delimiter: ","
-    ## chr  (1): url
-    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_n...
-
-    ## 
-    ## i Use `spec()` to retrieve the full column specification for this data.
-    ## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
 dim(df)
 ```
 
