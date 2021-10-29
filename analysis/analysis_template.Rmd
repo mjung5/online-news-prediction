@@ -104,10 +104,9 @@ df$Popularity <- as.factor(df$Popularity)
 
 # Use ordered function on a factor to order the levels
 df$Popularity <- ordered(df$Popularity, levels = c("Not at all popular", "Not too popular", "Somewhat popular", "Very popular"))
-
 ```
 
-We now split the data into train and test sets for predicitve modeling.
+We now split the data into train and test sets for predictive modeling.
 
 ```{r}
 set.seed(123)
@@ -120,6 +119,7 @@ testData <- df[-train_rows,]
 ## Summarizations
 
 ### Exploratory Data Anaysis
+
 We will use train set for EDA. Here is the summary statistics of targeted variable (shares).
 
 ```{r}
@@ -136,8 +136,7 @@ share_stat <- trainData %>%
                           )
 
 # Display a table of the summary stats.
-knitr::kable(share_stat, caption = "Summary Stats by shares", digits = 2)
-
+knitr::kable(share_stat, digits = 2)
 ```
 
 #### Shares by day of week
@@ -148,11 +147,9 @@ trainData %>%
   group_by(weekday) %>%
   summarise(total_shares = sum(shares), avg_shares = round(mean(shares)), max_shares = max(shares)) %>%
   knitr::kable()
-
 ```
 
 The above table shows a breakdown of total, average, and maximum number of shares for articles published on a specific weekday for this channel. Some channels tend to have more popular days than others.
-
 
 ```{r}
 # histogram for day of week vs shares
@@ -160,15 +157,15 @@ The above table shows a breakdown of total, average, and maximum number of share
 trainData %>% ggplot(aes(x=weekday, y=shares)) +
         geom_bar(stat="identity", fill = "darkblue") + 
    theme(axis.text.x = element_text(angle = 45, vjust = .75)) +
-        ggtitle('Day of Week and Total Number of Shares')
-
+    labs(x = "Day of week", 
+       title = "Day of Week and Total Number of Shares") 
 ```
 
 While the summary statistic by day of week table shows the breakdown information, the above bar plot visually shows a count of the total number of shares for all articles published on each day of week. If the total number of shares are generally higher during week days than weekends, we can infer that people are less likely to involve in reading and sharing the articles during the weekends and more likely to relax and do more leisure activities.   
 
 #### Shares by popularity
 
-```{r}
+```{r message=FALSE}
 # Summary statistics by popularity
 trainData %>% 
   group_by(Popularity) %>%
@@ -180,12 +177,12 @@ The above table show a summary of the newly created `popularity` variable. If th
 
 #### Count of news by popularity over different day of week
 
-```{r}
-#Bar plot of weekday by popularity 
+```{r message=FALSE}
+# Bar plot of weekday by popularity 
 ggplot(data = trainData, aes(x = weekday)) +
   geom_bar(aes(fill = as.factor(Popularity))) + 
-  labs(x = "Days of week", 
-       title = "Days of week by popularity") +
+  labs(x = "Day of week", 
+       title = "Day of week by popularity") +
   theme(axis.text.x = element_text(angle = 45, hjust=1)) +
   scale_fill_discrete(name = "Popularity") 
             
@@ -198,7 +195,7 @@ For example, if all days have the same number of 'very popular' articles, we cou
 #### Shares by number of links 
 
 ```{r message=FALSE}
-# simple scatter plot
+# Simple scatter plot
 g2 <- trainData %>% ggplot(aes(x=num_hrefs, y=shares)) +
         geom_point(size=2, shape=23) +
         ylim(0, 10000) +
@@ -216,7 +213,7 @@ In the above scatter, we compare the number of links in an article to its shares
 ggplot(trainData, aes(x = weekday, 
                                 y = num_hrefs, 
                                 fill = weekday)
-                            ) +
+                      ) +
   geom_boxplot() +
   scale_x_discrete("Day of Week") +
   ggtitle("Numbers link comparison by day of week") +
@@ -242,7 +239,6 @@ g3 <- ggplot(data = trainData, aes(x =  n_tokens_title,
 g4 <- ggplot(data = trainData, aes(x =  n_tokens_content, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
-  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
       ggtitle("Word count in the content") +
   geom_smooth(method = lm)
 
@@ -253,22 +249,21 @@ Scatter plot A shows the number of words in the title compared to the number of 
 
 #### Unique words count
 
-```{r}
+```{r message=FALSE}
 # scatter plot of Unique words count
 ggplot(data = trainData, aes(x =  n_unique_tokens, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
-  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
       ggtitle("Unique Word count") +
-      ylim(0, 10000) 
-  geom_smooth(method = lm)
+      ylim(0, 10000) + 
+      geom_smooth(method = lm)
 ```
 
 Above, we see a plot of the number of unique words in each article compared to the number of shares. Across channels, there does not seem to be a strong linear correlation between these two variables. However, this variable may have significance in tree based models.
 
 #### Number of image and video
 
-```{r}
+```{r message=FALSE}
 # scatter plot of Number of words in the content
 g5 <- ggplot(data = trainData, aes(x =  num_imgs, 
                       y = shares)) +
@@ -288,17 +283,17 @@ g6 <- ggplot(data = trainData, aes(x =  num_videos,
 plot_grid(g5, g6,  labels = c('C', 'D')) 
 ```
 
-In these scatter plots, we compare the number of images/videos to the number of shares. As a reader, when I see interesting images and videos in the article, I have tendency to read and share the articles. However, it may be depending on the topic of the article or numbers of images/videos. If the points display positive trend, then the articles with more images/ videos tend to be shared more. Contrarily, if the points display downward trend, then the articles with more images/ videos tend to be shared less. 
+In these scatter plots, we compare the number of images/videos to the number of shares. As a reader, when I see interesting images and videos in the article, I have tendency to read and share the articles. However, it may be depending on the topic of the article or numbers of images/videos. If the points display positive trend, then the articles with more images/ videos tend to be shared more. Contrarily, if the points display downward trend, then the articles with more images/videos tend to be shared less. 
 
 #### Number of keywords
 
-```{r}
+```{r message=FALSE}
 # Scatter plot of number of keywords
 ggplot(data = trainData, aes(x =  num_keywords, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
       ggtitle("Number of keywords") +
-  geom_smooth(method = lm)
+      geom_smooth(method = lm)
 ```
 
 In above plot, we compare the number of keywords that appear in an article to the number of shares. Across channels, there does not appear to be much linear correlation between the two variables. In other words, the number of keywords may not be the significant factor to the readers, but may be the topic or the name of the keywords are more important aspect since readers often search keywords of their interests to find articles.  
@@ -324,7 +319,7 @@ g8 <- ggplot(data = trainData, aes(x =  rate_negative_words,
 plot_grid(g7, g8,  labels = c('A', 'B')) 
 ```
 
-In above scatter plots, we compare the positive/negative rate of words that appear in an article to the number of shares of an article. If the positive relationships show in each plot, then articles with more  positive or negative rate of words tend to be shared more frequently. Vice versa, if the negative relationships show in each plot, then articles with  more positive or negative rate of words tend to be shared less frequently. Across channels, there seems to be a slight positive correlation between positive words rate and shares. Additionally, there seems to be a slight negative correlation between negative words rate and shares. The results tells that people are more likely to share articles with positive words. 
+In above scatter plots, we compare the positive/negative rate of words that appear in an article to the number of shares of an article. If the positive relationships show in each plot, then articles with more  positive or negative rate of words tend to be shared more frequently. Vice versa, if the negative relationships show in each plot, then articles with  more positive or negative rate of words tend to be shared less frequently. The writers would benefit from the above information whether more positive or negative words should be included across different channels. 
 
 #### Title subjectivity
 
@@ -358,7 +353,7 @@ g10 <- ggplot(data = trainData, aes(x =  avg_negative_polarity,
 plot_grid(g9, g10,  labels = c('A', 'B')) 
 ```
 
-In the above plots, we compare the average polarity of positive/negative words that appear in the article to the number of shares. If there is a positive relationship between the average positive polarity and the number of shares, then articles with more positive polarity tend to be shared more frequently. Yet, if there is a negative relationship between the two variables, then articles with more positive polarity are less likely to be shared. Same interpretation applied to the relationship between average negative polarity and the number of shares that depending on the positive or negative trend, articles with more negiative polarity tend to be shared more often or less likely. "Polarity" conveys the idea that words have a very strong opinion. Therefore, higher average positive polarity refers that articles carry extreme positive opinions. 
+In the above plots, we compare the average polarity of positive/negative words that appear in the article to the number of shares. If there is a positive relationship between the average positive polarity and the number of shares, then articles with more positive polarity tend to be shared more frequently. Yet, if there is a negative relationship between the two variables, then articles with more positive polarity are less likely to be shared. Same interpretation applied to the relationship between average negative polarity and the number of shares that depending on the positive or negative trend, articles with more negative polarity tend to be shared more often or less likely. "Polarity" conveys the idea that words have a very strong opinion. Therefore, higher average positive polarity refers that articles carry extreme positive opinions. 
 
 #### Correlation with numeric variables
 
@@ -391,32 +386,20 @@ Above shows the correlation matrix for the numerical variables we explore in EDA
 Linear regression is one of the commonly used supervised methods for modeling and useful tool for predicting a quantitative response on the basis of a single or multiple predictor variables. The idea of linear regression is that the model finds the best fit line between predictor variables and response variable, minimizing sum of squared errors. Also, Linear Regression is flexible in which to include many explanatory variables, higher order terms, and/or interaction, so we can see the effect the combinations on prediction.  Here we will fit two different linear regression models.   
 
 #### Linear model 1
-The first linear regression model will have predictors selected by stepwise selection. After choosing the subset of predictors, we will use repeated cross-validation with 10 folder and will find the RMSE and R2.
 
-```{r}
-# Stepwise model selection
-lmFitSelect <- lm(shares ~ n_tokens_title + n_tokens_content+ is_weekend +
-                    num_hrefs + num_imgs + num_videos + num_keywords +
-                    rate_positive_words + title_subjectivity +
-                    I(n_tokens_content^2) + I(num_imgs^2) + I(num_videos^2) +
-                    I(num_hrefs^2) + is_weekend, 
-                  data = trainData)
-models <- step(lmFitSelect, trace=0)
-summary(models)
+The first linear regression model will have predictors selected by EDA. we will use repeated cross-validation with 10 folder and will find the RMSE and R2.
 
-```
-
-
-```{r}
-# get all numeric columns
-train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
-test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
-
-# train data with variables chosen by stepWise
+```{r message=FALSE}
+# Linear model 1 with train set 
 set.seed(10)
-lm.fit1 <- train(shares ~ num_imgs + num_videos + rate_positive_words +
-                   I(num_videos^2) + I(num_hrefs^2), 
-                 data = train_df,
+lm.fit1 <- train(shares ~ n_tokens_title + n_tokens_content +
+                   num_hrefs + num_imgs + num_videos + num_keywords +
+                   rate_positive_words + rate_negative_words + title_subjectivity +
+                   n_unique_tokens + avg_positive_polarity + avg_negative_polarity +
+                   weekday + I(n_tokens_title^2) + I(n_unique_tokens^2) +
+                   I(num_keywords ^2) + I(avg_positive_polarity^2) +
+                    I(num_hrefs^2), 
+                 data = trainData,
                  method="lm",
                  preProcess = c("center","scale"),
                  trControl = trainControl(method = "repeatedcv", 
@@ -426,12 +409,15 @@ lm.fit1 <- train(shares ~ num_imgs + num_videos + rate_positive_words +
 lm.fit1
 ```
 
+First linear model has an RMSE of `r round(lm.fit1$results$RMSE,2)`.  
 
 #### Linear model 2 - Logarithmic Linear Regression
 
 Now, let's look at regresssing on the log-transformed target variable of shares.
+
 ```{r}
-# get all numeric columns
+# Linear model 2 with train set
+# Get all numeric columns
 train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
 test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
 
@@ -444,7 +430,7 @@ test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
 ## summary
 #mod_summary <- summary(forward)
 
-# train model
+# Train model
 lm.fit2 <- train(log(shares) ~ n_tokens_content + num_hrefs + average_token_length + 
                         num_keywords + kw_min_min + kw_max_avg + kw_avg_avg + 
                         is_weekend + LDA_04 + global_subjectivity, 
@@ -458,31 +444,29 @@ lm.fit2 <- train(log(shares) ~ n_tokens_content + num_hrefs + average_token_leng
 lm.fit2
 ```
 
+Second linear model has an RMSE of `r round(lm.fit2$results$RMSE,2)`.
+
 ### Ensemble Tree-based model
 
 Tree-based method splits up response variable into subsets based on their relationship to one or more predictor variables. Because it is easy to understand and interpret output and no statistical assumptions is necessary, regression tree (continuous variable) and classification tree (group membership) are commonly used. However, these models are influenced vastly even there is a small changes in the data. Therefore, Ensemble tree-based model are highly used in machine learning to gain strong prediction even though it loses interpretability because it gets rid of variation of data set to data set and average of predication for a final prediction. In this project, we will use the two of most commonly used ensemble methods: Random Forests and Boosting. 
 
 #### Random Forest Model
 
-Random Forest method,  which shares the idea of bagging, but extends the idea and only include random subset of predictors for each bootstrap sample/tree fit instead of including every predictor in each of the tree.  In doing so, one or two good predictors won’t dominate the tree fit. Random forest method use mtry as tuning parameter and the number of randomly selected predictor is obtained using *m* = *p*/3 formula (p as the number of predictors). Below, you will see the result of training with the random forest method. By choosing randomly selected subset of predictors in each tree, we will possibly reduce the correlation and gain stronger prediction.
+Random Forest method,  which shares the idea of bagging, but extends the idea and only include random subset of predictors for each bootstrap sample/tree fit instead of including every predictor in each of the tree.  In doing so, one or two good predictors won’t dominate the tree fit. Random forest method use mtry as tuning parameter and the value of this parameter for regression models is commonly obtained using  *m* = *p*/3 formula (p as the number of predictors). Below, you will see the result of training with the random forest method. By choosing randomly selected subset of predictors in each tree, we will possibly reduce the correlation and gain stronger prediction.
 
 ```{r, cache=TRUE}
-# get all numeric columns
-train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
-test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
-
-# tuning parameter is mtry, use values of 1,2,..,10
+# Tuning parameter is mtry, use values of 1,..,4
 rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
                  n_unique_tokens+avg_positive_polarity+
                  avg_negative_polarity + num_hrefs +  num_imgs +
                  num_videos + num_keywords + title_sentiment_polarity +
                  rate_positive_words + rate_negative_words +
-                 title_subjectivity + is_weekend,
-                 data = train_df, 
+                 title_subjectivity + weekday,
+                 data = trainData, 
                  method = "rf", 
                  trControl = trainControl(method = "cv", number = 5),
                  preProcess = c("center", "scale"),
-                 tuneGrid = data.frame(mtry = (1:3)))
+                 tuneGrid = data.frame(mtry = (1:4)))
 rfFit
 
 # Re-train using best hyperparameter value
@@ -491,8 +475,8 @@ rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
                  avg_negative_polarity + num_hrefs +  num_imgs +
                  num_videos + num_keywords + title_sentiment_polarity +
                  rate_positive_words + rate_negative_words +
-                 title_subjectivity,
-                 data = train_df, 
+                 title_subjectivity + weekday,
+                 data = trainData, 
                  method = "rf", 
                  trControl = trainControl(method = "cv", number = 5),
                  preProcess = c("center", "scale"),
@@ -500,6 +484,8 @@ rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
 rfFit
 ```
 
+The random forest model has an RMSE of `r round(min(rfFit$results$RMSE),2)`.
+  
 #### Boosted Tree Model
 
 The boosted tree is another tree-based regression model. This model aims to predict the residuals between the number of shares (target variable) of each observation and the average number of shares. To do this, the model builds smaller trees of specified depth that add/subtract to predictions with the hope that predictions move closer to their residual values. To prevent overfitting of data, trees are constricted to a 'shrinkage' parameter (that takes a value between 0 and 1) which limits the amount of boosting on predictions. 
@@ -507,18 +493,18 @@ The boosted tree is another tree-based regression model. This model aims to pred
 For a really good video explanation, watch [this](https://www.youtube.com/watch?v=3CC4N4z3GJc).
 
 ```{r}
-# get all numeric columns
+# Get all numeric columns
 train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
 test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
 
-# declare grid of values to test in cross validation
-## code retrieved from https://topepo.github.io/caret/model-training-and-tuning.html
+# Declare grid of values to test in cross validation
+## Code retrieved from https://topepo.github.io/caret/model-training-and-tuning.html
 gbmGrid <-  expand.grid(interaction.depth = c(1, 5, 9), # complexity of tree
                         n.trees = c(25, 50, 100, 150, 200), # number of iterations (i.e. trees)
                         shrinkage = 0.1, # learning rate
                         n.minobsinnode = 20) # minimum number of samples in a node to commence splitting
 
-# train using crossvalidation, print out best fitting parameters
+# Train using crossvalidation, print out best fitting parameters
 boostFit <- train(shares ~ .,
                 data = train_df,
                 method = "gbm",
@@ -539,17 +525,20 @@ boostFit <- train(shares ~ .,
 boostFit
 ```
 
+The boosted tree model has an RMSE of `r round(min(boostFit$results$RMSE),2)`.
+
 ## Comparison
 
-Now, we compare the 4 models developed above. Each model was evaluated on a test data set and Root MSE values(roof of test prediction error) were compared. 
+Now, we compare the 4 models developed above. Each model was evaluated on a test data set and Root MSE values(roof of test prediction error) were compared.
+
 ```{r}
 # Predict on test data
-predLm1 <- predict(lm.fit1, newdata = test_df)
+predLm1 <- predict(lm.fit1, newdata = testData)
 predLm2 <- predict(lm.fit2, newdata = test_df)
-rfPred <- predict(rfFit, newdata = test_df)
+rfPred <- predict(rfFit, newdata = testData)
 boostPred <- predict(boostFit, newdata = test_df)
 
-# Calculate rmse
+# Calculate RMSE
 rmseLm1 <- sqrt(mean((predLm1 - test_df$shares)^2))
 rmseLm2 <- sqrt(mean((predLm2 - test_df$shares)^2))
 rfMSE <- sqrt(mean((rfPred - test_df$shares)^2))
@@ -561,16 +550,18 @@ rmseTotal <- data.frame('Linear Regression Model 1' = rmseLm1,
                    'Boosting Model' = boostRMSE)
 
 knitr::kable(t(rmseTotal),
-               digits=3,
+               digits=2,
                caption="Summary Table of RMSE score",
                col.names = "RMSE")
 ```
 
 ```{r}
+# Finding the best model for each channel
 winningModel <- ifelse((rmseLm1 < rmseLm2) & (rmseLm1 < rfMSE) & (rmseLm1 < boostRMSE), 'Linear Model 1', 
        ifelse((rmseLm2 < rfMSE) & (rmseLm2 < boostRMSE), 'Linear Model 2',
        ifelse(rfMSE < boostRMSE, 'Random Forest', 'Boosted Tree')))
 lowestrmse <- min(rmseLm1, rmseLm2, rfMSE, boostRMSE)
 paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', round(lowestrmse, 2))
-
 ```
+
+The winning model is `r winningModel` for `r channel` data. Its RMSE value is `r round(lowestrmse, 2)`.
