@@ -229,7 +229,7 @@ trainData %>% ggplot(aes(x=weekday, y=shares)) +
        title = "Day of Week and Total Number of Shares") 
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 While the summary statistic by day of week table shows the breakdown
 information, the above bar plot visually shows a count of the total
@@ -275,7 +275,7 @@ ggplot(data = trainData, aes(x = weekday)) +
   scale_fill_discrete(name = "Popularity") 
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 The bar plot above shows a breakdown of the number of articles published
 vs day of week. We can also see a breakdown of the proportion of
@@ -300,7 +300,7 @@ g2 <- trainData %>% ggplot(aes(x=num_hrefs, y=shares)) +
 g2
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 In the above scatter, we compare the number of links in an article to
 its shares. This plot is motivated by the implementation of Google’s
@@ -323,7 +323,7 @@ ggplot(trainData, aes(x = weekday,
   scale_fill_discrete(name = "Day of week") 
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 In the above box plot, we look at how the number of link in an article
 by day of week. When the median line of weekend are lower than weekday,
@@ -355,7 +355,7 @@ g4 <- ggplot(data = trainData, aes(x =  n_tokens_content,
 plot_grid(g3, g4,  labels = c('A', 'B'))   
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 Scatter plot A shows the number of words in the title compared to the
 number of shares. Scatter plot B shows a comparison of the number of
@@ -381,7 +381,7 @@ ggplot(data = trainData, aes(x =  n_unique_tokens,
       geom_smooth()
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 Above, we see a plot of the number of unique words in each article
 compared to the number of shares. Across channels, there does not seem
@@ -410,7 +410,7 @@ g6 <- ggplot(data = trainData, aes(x =  num_videos,
 plot_grid(g5, g6,  labels = c('C', 'D')) 
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 In these scatter plots, we compare the number of images/videos to the
 number of shares. As a reader, when I see interesting images and videos
@@ -432,7 +432,7 @@ ggplot(data = trainData, aes(x =  num_keywords,
       geom_smooth(method = lm)
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 In above plot, we compare the number of keywords that appear in an
 article to the number of shares. Across channels, there does not appear
@@ -463,7 +463,7 @@ g8 <- ggplot(data = trainData, aes(x =  rate_negative_words,
 plot_grid(g7, g8,  labels = c('A', 'B')) 
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 In above scatter plots, we compare the positive/negative rate of words
 that appear in an article to the number of shares of an article. If the
@@ -486,7 +486,7 @@ ggplot(data = trainData, aes(x =     title_subjectivity,
       geom_smooth()
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 In the title subjectivity scatter plot, we compare title subjectivity to
 the number of shares. Across channels, there does not seem to be a
@@ -515,7 +515,7 @@ g10 <- ggplot(data = trainData, aes(x =  avg_negative_polarity,
 plot_grid(g9, g10,  labels = c('A', 'B')) 
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 In the above plots, we compare the average polarity of positive/negative
 words that appear in the article to the number of shares. If there is a
@@ -552,7 +552,7 @@ df_tmp <- trainData %>% select(c('n_tokens_title',
 corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
 ```
 
-![](socmed_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](socmed_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 Above shows the correlation matrix for the numerical variables we
 explore in EDA. Shares is the bottom row. We use this plot to find the
@@ -800,9 +800,10 @@ boostFit
     ##   4936.391  0.08193643  2614.294
     ## 
     ## Tuning parameter 'n.trees' was held constant at a value of 50
-    ## Tuning parameter 'interaction.depth' was held constant at a value of 9
     ## Tuning
-    ##  parameter 'shrinkage' was held constant at a value of 0.1
+    ## 
+    ## Tuning parameter 'shrinkage' was held constant at a value of 0.1
+    ## 
     ## Tuning parameter 'n.minobsinnode' was held constant at a value of 20
 
 The boosted tree model has an RMSE of 4936.39.
