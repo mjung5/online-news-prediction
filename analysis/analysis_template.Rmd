@@ -329,6 +329,7 @@ ggplot(data = trainData, aes(x =     title_subjectivity,
                       y = shares)) +
       geom_point(alpha = 0.50) +
       ggtitle("Title subjectivity")
+      geom_smooth()
 ```
 
 In the title subjectivity scatter plot, we compare title subjectivity to the number of shares. Across channels, there does not seem to be a strong linear correlation between the two variables. Based on the results, we infer that the subjectivity (such as tone of voice and emotions) in the title may not influence people in terms of sharing articles. 

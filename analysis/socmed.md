@@ -102,10 +102,10 @@ df <- read_csv('data/OnlineNewsPopularity.csv') %>%
 
     ## Rows: 39644 Columns: 61
 
-    ## -- Column specification -------------------------------------------------------
+    ## -- Column specification ------------------------------------------------------------------------------------------------------------------------------------
     ## Delimiter: ","
     ## chr  (1): url
-    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_n...
+    ## dbl (60): timedelta, n_tokens_title, n_tokens_content, n_unique_tokens, n_non_stop_words, n_non_stop_unique_tokens, num_hrefs, num_self_hrefs, num_imgs,...
 
     ## 
     ## i Use `spec()` to retrieve the full column specification for this data.
@@ -489,6 +489,14 @@ ggplot(data = trainData, aes(x =     title_subjectivity,
 
 ![](socmed_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
+``` r
+      geom_smooth()
+```
+
+    ## geom_smooth: na.rm = FALSE, orientation = NA, se = TRUE
+    ## stat_smooth: na.rm = FALSE, orientation = NA, se = TRUE
+    ## position_identity
+
 In the title subjectivity scatter plot, we compare title subjectivity to
 the number of shares. Across channels, there does not seem to be a
 strong linear correlation between the two variables. Based on the
@@ -831,11 +839,9 @@ boostFit
     ##   9                  200      5137.383  0.08231406  2775.017
     ## 
     ## Tuning parameter 'shrinkage' was held constant at a value of 0.1
-    ## 
     ## Tuning parameter 'n.minobsinnode' was held constant at a value of 20
     ## RMSE was used to select the optimal model using the smallest value.
-    ## The final values used for the model were n.trees = 50, interaction.depth =
-    ##  9, shrinkage = 0.1 and n.minobsinnode = 20.
+    ## The final values used for the model were n.trees = 50, interaction.depth = 9, shrinkage = 0.1 and n.minobsinnode = 20.
 
 ``` r
 # Re-train using best hyperparameter value
@@ -863,10 +869,9 @@ boostFit
     ##   4936.391  0.08193643  2614.294
     ## 
     ## Tuning parameter 'n.trees' was held constant at a value of 50
+    ## Tuning parameter 'interaction.depth' was held constant at a value of 9
     ## Tuning
-    ## 
-    ## Tuning parameter 'shrinkage' was held constant at a value of 0.1
-    ## 
+    ##  parameter 'shrinkage' was held constant at a value of 0.1
     ## Tuning parameter 'n.minobsinnode' was held constant at a value of 20
 
 The boosted tree model has an RMSE of 4936.39.
