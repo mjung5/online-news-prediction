@@ -11,6 +11,7 @@ placeholder
 * [Business](analysis/bus.md)
 * [Entertainment](analysis/entertainment.md)
 * [Lifestyle](analysis/lifestyle.md)
+* [Social Media](analysis/socmed.md)
 * [Tech](analysis/tech.md)
 * [World](analysis/world.md)
 
