@@ -1,4 +1,4 @@
-Socmed
+Social Media
 ================
 
 -   [Intro](#intro)
@@ -90,7 +90,7 @@ library(cowplot)
 ## Data manipulaton
 
 We read in the online news popularity data and subset the data by
-data\_channel\_is\*(one of six groups).
+data_channel_is\*(one of six groups).
 
 ``` r
 # read entire dataset
@@ -150,7 +150,7 @@ We now split the data into train and test sets for predictive modeling.
 ``` r
 set.seed(123)
 # split data into train and test sets
-train_rows <- sample(nrow(df), nrow(df)*0.7)
+train_rows <- sample(nrow(df), nrow(df)*0.8)
 trainData <- df[train_rows,]
 testData <- df[-train_rows,] 
 ```
@@ -181,7 +181,7 @@ knitr::kable(share_stat, digits = 2)
 
 | Count | Min |   Q1 | Median | Average |   Q3 |   Max | Std.Dev |
 |------:|----:|-----:|-------:|--------:|-----:|------:|--------:|
-|  1626 |  23 | 1400 |   2200 | 3654.42 | 3800 | 59000 | 5242.53 |
+|  1858 |   5 | 1400 |   2100 | 3612.03 | 3900 | 59000 | 5051.07 |
 
 #### Shares by day of week
 
@@ -193,15 +193,15 @@ trainData %>%
   knitr::kable()
 ```
 
-| weekday   | total\_shares | avg\_shares | max\_shares |
-|:----------|--------------:|------------:|------------:|
-| Sunday    |        448406 |        5154 |       54100 |
-| Monday    |        918756 |        3943 |       47700 |
-| Tuesday   |        988498 |        3189 |       37300 |
-| Wednesday |       1140722 |        3704 |       59000 |
-| Thursday  |       1000986 |        3061 |       26900 |
-| Friday    |       1034607 |        4258 |       57000 |
-| Saturday  |        410105 |        3475 |       34500 |
+| weekday   | total_shares | avg_shares | max_shares |
+|:----------|-------------:|-----------:|-----------:|
+| Sunday    |       475377 |       4901 |      54100 |
+| Monday    |      1071584 |       3984 |      47700 |
+| Tuesday   |      1134883 |       3144 |      37300 |
+| Wednesday |      1263115 |       3651 |      59000 |
+| Thursday  |      1168610 |       3116 |      26900 |
+| Friday    |      1119151 |       4160 |      57000 |
+| Saturday  |       478433 |       3393 |      34500 |
 
 The above table shows a breakdown of total, average, and maximum number
 of shares for articles published on a specific weekday for this channel.
@@ -238,12 +238,12 @@ trainData %>%
   knitr::kable()
 ```
 
-| Popularity         | Total\_shares | Avg\_shares | Median\_shares |     IQR |
-|:-------------------|--------------:|------------:|---------------:|--------:|
-| Not at all popular |         85748 |         692 |          755.5 |  278.25 |
-| Not too popular    |        416432 |        1214 |         1200.0 |  200.00 |
-| Somewhat popular   |       1160300 |        2054 |         2000.0 |  700.00 |
-| Very popular       |       4279600 |        7205 |         4700.0 | 3975.00 |
+| Popularity         | Total_shares | Avg_shares | Median_shares |  IQR |
+|:-------------------|-------------:|-----------:|--------------:|-----:|
+| Not at all popular |        95949 |        680 |           752 |  282 |
+| Not too popular    |       464304 |       1212 |          1200 |  200 |
+| Somewhat popular   |      1342400 |       2046 |          2000 |  700 |
+| Very popular       |      4808500 |       7092 |          4800 | 3975 |
 
 The above table show a summary of the newly created `popularity`
 variable. If the average score is significantly higher than the median
@@ -284,7 +284,7 @@ g2 <- trainData %>% ggplot(aes(x=num_hrefs, y=shares)) +
         geom_point(size=2, shape=23) +
         ylim(0, 10000) +
         ggtitle("Number of links") +
-  geom_smooth(method = lm)
+  geom_smooth()
 g2
 ```
 
@@ -294,7 +294,8 @@ In the above scatter, we compare the number of links in an article to
 its shares. This plot is motivated by the implementation of Google’s
 [PageRank Algorithm](https://en.wikipedia.org/wiki/PageRank). If the
 points show an upward trend, the articles with more number of links tend
-to be more shared.
+to be more shared. Likewise, if the points show a downward trend,
+articles with less number of links tend to be more shared.
 
 #### Number of link by day of week
 
@@ -330,7 +331,7 @@ g3 <- ggplot(data = trainData, aes(x =  n_tokens_title,
                       y = shares)) +
       geom_point(alpha = 0.50) + 
       ggtitle("Word count in the title") +
-  geom_smooth(method = lm)
+  geom_smooth()
 
 
 # scatter plot of Number of words in the content
@@ -338,7 +339,7 @@ g4 <- ggplot(data = trainData, aes(x =  n_tokens_content,
                       y = shares)) +
       geom_point(alpha = 0.50) + 
       ggtitle("Word count in the content") +
-  geom_smooth(method = lm)
+  geom_smooth()
 
 plot_grid(g3, g4,  labels = c('A', 'B'))   
 ```
@@ -385,7 +386,7 @@ g5 <- ggplot(data = trainData, aes(x =  num_imgs,
       geom_point(alpha = 0.50) +
       ggtitle("Number of image") +
       ylim(0, 10000) +
-      geom_smooth(method = lm)
+      geom_smooth()
 
 # Scatter plot of Number of words in the content
 g6 <- ggplot(data = trainData, aes(x =  num_videos, 
@@ -393,7 +394,7 @@ g6 <- ggplot(data = trainData, aes(x =  num_videos,
       geom_point(alpha = 0.50) + 
       ggtitle("Number of video") +
       ylim(0, 10000)+
-      geom_smooth(method = lm)
+      geom_smooth()
 
 plot_grid(g5, g6,  labels = c('C', 'D')) 
 ```
@@ -417,7 +418,7 @@ ggplot(data = trainData, aes(x =  num_keywords,
                       y = shares)) +
       geom_point(alpha = 0.50) + 
       ggtitle("Number of keywords") +
-      geom_smooth(method = lm)
+      geom_smooth()
 ```
 
 ![](socmed_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
@@ -446,7 +447,7 @@ g8 <- ggplot(data = trainData, aes(x =  rate_negative_words,
                       y = shares)) +
       geom_point(alpha = 0.50) +
       ggtitle("Negative words rate") +
-    geom_smooth()
+      geom_smooth()
 
 plot_grid(g7, g8,  labels = c('A', 'B')) 
 ```
@@ -491,14 +492,14 @@ g9 <- ggplot(data = trainData, aes(x =  avg_positive_polarity,
                       y = shares)) +
       geom_point(alpha = 0.50) +
       ggtitle("Average positive polarity") +
-      geom_smooth(method = lm)
+      geom_smooth()
 
 # Scatter plot of average negative polarity
 g10 <- ggplot(data = trainData, aes(x =  avg_negative_polarity, 
                       y = shares)) +
       geom_point(alpha = 0.50) +
       ggtitle("Average negative polarity") +
-      geom_smooth(method = lm)
+      geom_smooth()
 
 plot_grid(g9, g10,  labels = c('A', 'B')) 
 ```
@@ -589,20 +590,20 @@ lm.fit1
 
     ## Linear Regression 
     ## 
-    ## 1626 samples
+    ## 1858 samples
     ##   13 predictor
     ## 
     ## Pre-processing: centered (23), scaled (23) 
     ## Resampling: Cross-Validated (10 fold, repeated 3 times) 
-    ## Summary of sample sizes: 1464, 1462, 1463, 1464, 1463, 1463, ... 
+    ## Summary of sample sizes: 1672, 1671, 1673, 1671, 1673, 1673, ... 
     ## Resampling results:
     ## 
     ##   RMSE      Rsquared    MAE     
-    ##   5045.921  0.02705076  2672.041
+    ##   4886.852  0.02775812  2598.371
     ## 
     ## Tuning parameter 'intercept' was held constant at a value of TRUE
 
-First linear model has an RMSE of 5045.92.
+First linear model has an RMSE of 4886.85.
 
 #### Linear model 2 - Logarithmic Linear Regression
 
@@ -640,20 +641,20 @@ lm.fit2
 
     ## Linear Regression 
     ## 
-    ## 1626 samples
+    ## 1858 samples
     ##   10 predictor
     ## 
     ## Pre-processing: centered (10), scaled (10) 
     ## Resampling: Cross-Validated (10 fold, repeated 3 times) 
-    ## Summary of sample sizes: 1462, 1463, 1464, 1464, 1464, 1463, ... 
+    ## Summary of sample sizes: 1672, 1672, 1671, 1672, 1672, 1674, ... 
     ## Resampling results:
     ## 
     ##   RMSE       Rsquared    MAE      
-    ##   0.8070214  0.06223102  0.6141763
+    ##   0.8174714  0.06507315  0.6145632
     ## 
     ## Tuning parameter 'intercept' was held constant at a value of TRUE
 
-Second linear model has an RMSE of 0.81.
+Second linear model has an RMSE of 0.82.
 
 ### Ensemble Tree-based model
 
@@ -694,7 +695,7 @@ rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
                  method = "rf", 
                  trControl = trainControl(method = "cv", number = 5),
                  preProcess = c("center", "scale"),
-                 tuneGrid = data.frame(mtry = (1:4)))
+                 tuneGrid = data.frame(mtry = (1:5)))
 
 # Re-train using best hyperparameter value
 rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
@@ -713,20 +714,20 @@ rfFit
 
     ## Random Forest 
     ## 
-    ## 1626 samples
+    ## 1858 samples
     ##   14 predictor
     ## 
     ## Pre-processing: centered (19), scaled (19) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 1299, 1302, 1301, 1301, 1301 
+    ## Summary of sample sizes: 1486, 1489, 1485, 1486, 1486 
     ## Resampling results:
     ## 
     ##   RMSE      Rsquared    MAE     
-    ##   5149.391  0.01492109  2668.956
+    ##   4980.573  0.02265449  2599.593
     ## 
     ## Tuning parameter 'mtry' was held constant at a value of 1
 
-The random forest model has an RMSE of 5149.39.
+The random forest model has an RMSE of 4980.57.
 
 #### Boosted Tree Model
 
@@ -776,25 +777,25 @@ boostFit
 
     ## Stochastic Gradient Boosting 
     ## 
-    ## 1626 samples
+    ## 1858 samples
     ##   53 predictor
     ## 
     ## No pre-processing
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 1301, 1300, 1301, 1301, 1301 
+    ## Summary of sample sizes: 1487, 1486, 1485, 1487, 1487 
     ## Resampling results:
     ## 
     ##   RMSE      Rsquared    MAE     
-    ##   4936.391  0.08193643  2614.294
+    ##   4885.306  0.07388703  2518.122
     ## 
     ## Tuning parameter 'n.trees' was held constant at a value of 50
-    ## Tuning
-    ## 
-    ## Tuning parameter 'shrinkage' was held constant at a value of 0.1
-    ## 
+    ## Tuning parameter 'interaction.depth'
+    ##  was held constant at a value of 5
+    ## Tuning parameter 'shrinkage' was held constant at a value of
+    ##  0.1
     ## Tuning parameter 'n.minobsinnode' was held constant at a value of 20
 
-The boosted tree model has an RMSE of 4936.39.
+The boosted tree model has an RMSE of 4885.31.
 
 ## Comparison
 
@@ -828,10 +829,10 @@ knitr::kable(t(rmseTotal),
 
 |                           |    RMSE |
 |:--------------------------|--------:|
-| Linear.Regression.Model.1 | 6127.38 |
-| Linear.Regression.Model.2 | 7090.62 |
-| Random.Forest.Model       | 6081.69 |
-| Boosting.Model            | 6191.56 |
+| Linear.Regression.Model.1 | 7067.82 |
+| Linear.Regression.Model.2 | 8007.06 |
+| Random.Forest.Model       | 7050.21 |
+| Boosting.Model            | 6984.43 |
 
 Summary Table of RMSE score
 
@@ -844,4 +845,4 @@ lowestrmse <- min(rmseLm1, rmseLm2, rfMSE, boostRMSE)
 #paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', round(lowestrmse, 2))
 ```
 
-The winning model is Random Forest. Its RMSE value is 6081.69.
+The winning model is Boosted Tree. Its RMSE value is 6984.43.
