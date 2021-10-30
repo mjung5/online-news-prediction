@@ -537,9 +537,9 @@ rfPred <- predict(rfFit, newdata = testData)
 boostPred <- predict(boostFit, newdata = test_df)
 
 # Calculate RMSE
-rmseLm1 <- sqrt(mean((predLm1 - test_df$shares)^2))
+rmseLm1 <- sqrt(mean((predLm1 - testData$shares)^2))
 rmseLm2 <- sqrt(mean((predLm2 - test_df$shares)^2))
-rfMSE <- sqrt(mean((rfPred - test_df$shares)^2))
+rfMSE <- sqrt(mean((rfPred - testData$shares)^2))
 boostRMSE <- sqrt(mean((boostPred - test_df$shares)^2))
 
 rmseTotal <- data.frame('Linear Regression Model 1' = rmseLm1, 
