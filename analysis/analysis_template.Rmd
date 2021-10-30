@@ -39,7 +39,7 @@ The characteristics we will explore include:
 + `title_subjectivity`: subjectivity of title
 + `avg_positive_polarity` and `avg_negative_polarity`: average polarity of positive/negative words in article
 
-In the model building section, we explore 4 unique models: OLS, logarithmic linear regression, random forest tree, and a boosted tree. These models are trained using cross validation on a training dataset that is 80% of the original dataset. These models are compared using metric scores from results of predictions on test set.
+In the model building section, we explore 4 unique models: OLS, logarithmic linear regression, random forest tree, and a boosted tree. These models are trained using cross validation on a training data set that is 70% of the original data set. These models are compared using metric scores from results of predictions on test set.
 
 Lastly, all summarizations and models are generated after splitting by data channel. For example, on the lifestyle page, all EDA and model building is using data that is filtered by articles that come from the lifestyle channel. Splitting sections this way causes us to generalize descriptions.
 
@@ -59,9 +59,9 @@ library(cowplot)
 We read in the online news popularity data and subset the data by data_channel_is*(one of six groups).
 
 ```{r 1_readData, message=FALSE}
-# read entire dataset
-  # subset to get the data channel we want
-    # remove unnessary columns
+# Read entire dataset
+  # Subset to get the data channel we want
+    # Remove unnessary columns
 df <- read_csv('data/OnlineNewsPopularity.csv') %>%
         filter((!!sym(paste0('data_channel_is_', params$channel))) == 1) %>%
           select(-contains('data_channel_is'))
@@ -84,9 +84,9 @@ df <- df %>% mutate(weekday = ifelse(weekday_is_monday==1, 'Monday',
                 mutate(weekday = factor(weekday, levels = levels))
 
 
-# function to create the popularity column. 
-# popularity rating was created with summary stat info (25%, median, and 75%).
-# popularity is going to use for EDA.
+# Function to create the popularity column. 
+# Popularity rating was created with summary stat info (25%, median, and 75%).
+# Popularity is used for EDA.
 popularityCol <- function(dataset){
   dataset <- dataset %>% 
     mutate("Popularity" = if_else(shares > 2800, "Very popular",
@@ -111,8 +111,8 @@ We now split the data into train and test sets for predictive modeling.
 
 ```{r}
 set.seed(123)
-# split data into train and test sets
-train_rows <- sample(nrow(df), nrow(df)*0.8)
+# Split data into train and test sets
+train_rows <- sample(nrow(df), nrow(df)*0.7)
 trainData <- df[train_rows,]
 testData <- df[-train_rows,] 
 ```
@@ -124,7 +124,7 @@ testData <- df[-train_rows,]
 We will use train set for EDA. Here is the summary statistics of targeted variable (shares).
 
 ```{r}
-# summary statistics
+# Summary statistics
 share_stat <- trainData %>% 
                 summarise(Count = n(),
                           Min = min(shares), 
@@ -153,8 +153,7 @@ trainData %>%
 The above table shows a breakdown of total, average, and maximum number of shares for articles published on a specific weekday for this channel. Some channels tend to have more popular days than others.
 
 ```{r}
-# histogram for day of week vs shares
-
+# Bar plot for day of week vs shares
 trainData %>% ggplot(aes(x=weekday, y=shares)) +
         geom_bar(stat="identity", fill = "darkblue") + 
    theme(axis.text.x = element_text(angle = 45, vjust = .75)) +
@@ -187,7 +186,6 @@ ggplot(data = trainData, aes(x = weekday)) +
        title = "Day of week by popularity") +
   theme(axis.text.x = element_text(angle = 45, hjust=1)) +
   scale_fill_discrete(name = "Popularity") 
-            
 ```
 
 The bar plot above shows a breakdown of the number of articles published vs day of week. We can also see a breakdown of the proportion of popularity of articles for each day. This plot is important to understand if a greater number of shares exhibited by a day of the week is due to more articles being published on that day, or if it is due to that day of week having a direct effect on the number of shares.
@@ -229,15 +227,14 @@ In the above box plot, we look at how the number of link in an article by day of
 #### Number of words in the title and content
 
 ```{r message=FALSE}
-# scatter plot of Number of words in the title
+# Scatter plot of Number of words in the title
 g3 <- ggplot(data = trainData, aes(x =  n_tokens_title, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
       ggtitle("Word count in the title") +
   geom_smooth()
 
-
-# scatter plot of Number of words in the content
+# Scatter plot of Number of words in the content
 g4 <- ggplot(data = trainData, aes(x =  n_tokens_content, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
@@ -252,7 +249,7 @@ Scatter plot A shows the number of words in the title compared to the number of 
 #### Unique words count
 
 ```{r message=FALSE}
-# scatter plot of Unique words count
+# Scatter plot of Unique words count
 ggplot(data = trainData, aes(x =  n_unique_tokens, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
@@ -266,7 +263,7 @@ Above, we see a plot of the number of unique words in each article compared to t
 #### Number of image and video
 
 ```{r message=FALSE}
-# scatter plot of Number of words in the content
+# Scatter plot of Number of words in the content
 g5 <- ggplot(data = trainData, aes(x =  num_imgs, 
                       y = shares)) +
       geom_point(alpha = 0.50) +
@@ -424,13 +421,13 @@ Now, let's look at regresssing on the log-transformed target variable of shares.
 train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
 test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
 
-# code used to get regression variables
+# Code used to get regression variables
 ## fit using forward selection
 #forward <- regsubsets(log(shares) ~ .,
 #                      data = train_df,
 #                      nvmax = 10,
 #                      method = "forward")
-## summary
+## Summary
 #mod_summary <- summary(forward)
 
 # Train model
@@ -458,7 +455,7 @@ Tree-based method splits up response variable into subsets based on their relati
 Random Forest method,  which shares the idea of bagging, but extends the idea and only include random subset of predictors for each bootstrap sample/tree fit instead of including every predictor in each of the tree.  In doing so, one or two good predictors won’t dominate the tree fit. Random forest method use mtry as tuning parameter and the value of this parameter for regression models is commonly obtained using  *m* = *p*/3 formula (p as the number of predictors). Below, you will see the result of training with the random forest method. By choosing randomly selected subset of predictors in each tree, we will possibly reduce the correlation and gain stronger prediction.
 
 ```{r, cache=TRUE}
-# Tuning parameter is mtry, use values of 1,..,4
+# Tuning parameter is mtry, use values of 1,...,5
 rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
                  n_unique_tokens+avg_positive_polarity+
                  avg_negative_polarity + num_hrefs +  num_imgs +

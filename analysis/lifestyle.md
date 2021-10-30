@@ -65,8 +65,8 @@ The characteristics we will explore include:
 
 In the model building section, we explore 4 unique models: OLS,
 logarithmic linear regression, random forest tree, and a boosted tree.
-These models are trained using cross validation on a training dataset
-that is 80% of the original dataset. These models are compared using
+These models are trained using cross validation on a training data set
+that is 70% of the original data set. These models are compared using
 metric scores from results of predictions on test set.
 
 Lastly, all summarizations and models are generated after splitting by
@@ -90,12 +90,12 @@ library(cowplot)
 ## Data manipulaton
 
 We read in the online news popularity data and subset the data by
-data_channel_is\*(one of six groups).
+data\_channel\_is\*(one of six groups).
 
 ``` r
-# read entire dataset
-  # subset to get the data channel we want
-    # remove unnessary columns
+# Read entire dataset
+  # Subset to get the data channel we want
+    # Remove unnessary columns
 df <- read_csv('data/OnlineNewsPopularity.csv') %>%
         filter((!!sym(paste0('data_channel_is_', params$channel))) == 1) %>%
           select(-contains('data_channel_is'))
@@ -122,9 +122,9 @@ df <- df %>% mutate(weekday = ifelse(weekday_is_monday==1, 'Monday',
                 mutate(weekday = factor(weekday, levels = levels))
 
 
-# function to create the popularity column. 
-# popularity rating was created with summary stat info (25%, median, and 75%).
-# popularity is going to use for EDA.
+# Function to create the popularity column. 
+# Popularity rating was created with summary stat info (25%, median, and 75%).
+# Popularity is used for EDA.
 popularityCol <- function(dataset){
   dataset <- dataset %>% 
     mutate("Popularity" = if_else(shares > 2800, "Very popular",
@@ -149,8 +149,8 @@ We now split the data into train and test sets for predictive modeling.
 
 ``` r
 set.seed(123)
-# split data into train and test sets
-train_rows <- sample(nrow(df), nrow(df)*0.8)
+# Split data into train and test sets
+train_rows <- sample(nrow(df), nrow(df)*0.7)
 trainData <- df[train_rows,]
 testData <- df[-train_rows,] 
 ```
@@ -163,7 +163,7 @@ We will use train set for EDA. Here is the summary statistics of
 targeted variable (shares).
 
 ``` r
-# summary statistics
+# Summary statistics
 share_stat <- trainData %>% 
                 summarise(Count = n(),
                           Min = min(shares), 
@@ -179,9 +179,9 @@ share_stat <- trainData %>%
 knitr::kable(share_stat, digits = 2)
 ```
 
-| Count | Min |   Q1 | Median | Average |   Q3 |    Max | Std.Dev |
-|------:|----:|-----:|-------:|--------:|-----:|-------:|--------:|
-|  1679 |  28 | 1100 |   1700 | 3806.71 | 3200 | 208300 |  9674.1 |
+| Count | Min |   Q1 | Median | Average |   Q3 |    Max |  Std.Dev |
+|------:|----:|-----:|-------:|--------:|-----:|-------:|---------:|
+|  1469 |  28 | 1100 |   1700 | 3870.42 | 3300 | 208300 | 10135.86 |
 
 #### Shares by day of week
 
@@ -193,23 +193,22 @@ trainData %>%
   knitr::kable()
 ```
 
-| weekday   | total_shares | avg_shares | max_shares |
-|:----------|-------------:|-----------:|-----------:|
-| Sunday    |       668309 |       3755 |      33100 |
-| Monday    |      1224600 |       4802 |     196700 |
-| Tuesday   |      1163253 |       4340 |     208300 |
-| Wednesday |       991063 |       3260 |      73100 |
-| Thursday  |      1069922 |       3702 |      56000 |
-| Friday    |       755545 |       3059 |      40400 |
-| Saturday  |       518771 |       3759 |      23100 |
+| weekday   | total\_shares | avg\_shares | max\_shares |
+|:----------|--------------:|------------:|------------:|
+| Sunday    |        568486 |        3716 |       33100 |
+| Monday    |       1084133 |        4797 |      196700 |
+| Tuesday   |       1055088 |        4528 |      208300 |
+| Wednesday |        886248 |        3332 |       73100 |
+| Thursday  |        960704 |        3812 |       56000 |
+| Friday    |        695175 |        3204 |       40400 |
+| Saturday  |        435811 |        3572 |       23100 |
 
 The above table shows a breakdown of total, average, and maximum number
 of shares for articles published on a specific weekday for this channel.
 Some channels tend to have more popular days than others.
 
 ``` r
-# histogram for day of week vs shares
-
+# Bar plot for day of week vs shares
 trainData %>% ggplot(aes(x=weekday, y=shares)) +
         geom_bar(stat="identity", fill = "darkblue") + 
    theme(axis.text.x = element_text(angle = 45, vjust = .75)) +
@@ -217,7 +216,7 @@ trainData %>% ggplot(aes(x=weekday, y=shares)) +
        title = "Day of Week and Total Number of Shares") 
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 While the summary statistic by day of week table shows the breakdown
 information, the above bar plot visually shows a count of the total
@@ -238,12 +237,12 @@ trainData %>%
   knitr::kable()
 ```
 
-| Popularity         | Total_shares | Avg_shares | Median_shares |  IQR |
-|:-------------------|-------------:|-----------:|--------------:|-----:|
-| Not at all popular |       209752 |        690 |           736 |  261 |
-| Not too popular    |       493613 |       1192 |          1200 |  200 |
-| Somewhat popular   |       952300 |       1992 |          1900 |  600 |
-| Very popular       |      4735798 |       9805 |          5600 | 6100 |
+| Popularity         | Total\_shares | Avg\_shares | Median\_shares |     IQR |
+|:-------------------|--------------:|------------:|---------------:|--------:|
+| Not at all popular |        178175 |         685 |          731.5 |  249.25 |
+| Not too popular    |        428972 |        1195 |         1200.0 |  200.00 |
+| Somewhat popular   |        835300 |        1989 |         1900.0 |  600.00 |
+| Very popular       |       4243198 |        9868 |         5500.0 | 6075.00 |
 
 The above table show a summary of the newly created `popularity`
 variable. If the average score is significantly higher than the median
@@ -263,7 +262,7 @@ ggplot(data = trainData, aes(x = weekday)) +
   scale_fill_discrete(name = "Popularity") 
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 The bar plot above shows a breakdown of the number of articles published
 vs day of week. We can also see a breakdown of the proportion of
@@ -288,7 +287,7 @@ g2 <- trainData %>% ggplot(aes(x=num_hrefs, y=shares)) +
 g2
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 In the above scatter, we compare the number of links in an article to
 its shares. This plot is motivated by the implementation of Google’s
@@ -312,7 +311,7 @@ ggplot(trainData, aes(x = weekday,
   scale_fill_discrete(name = "Day of week") 
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 In the above box plot, we look at how the number of link in an article
 by day of week. When the median line of weekend are lower than weekday,
@@ -326,15 +325,14 @@ easier to acquire than links.
 #### Number of words in the title and content
 
 ``` r
-# scatter plot of Number of words in the title
+# Scatter plot of Number of words in the title
 g3 <- ggplot(data = trainData, aes(x =  n_tokens_title, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
       ggtitle("Word count in the title") +
   geom_smooth()
 
-
-# scatter plot of Number of words in the content
+# Scatter plot of Number of words in the content
 g4 <- ggplot(data = trainData, aes(x =  n_tokens_content, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
@@ -344,7 +342,7 @@ g4 <- ggplot(data = trainData, aes(x =  n_tokens_content,
 plot_grid(g3, g4,  labels = c('A', 'B'))   
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 Scatter plot A shows the number of words in the title compared to the
 number of shares. Scatter plot B shows a comparison of the number of
@@ -361,7 +359,7 @@ perhaps a negative linear relationship is appropriate.
 #### Unique words count
 
 ``` r
-# scatter plot of Unique words count
+# Scatter plot of Unique words count
 ggplot(data = trainData, aes(x =  n_unique_tokens, 
                       y = shares)) +
       geom_point(alpha = 0.50) + 
@@ -370,7 +368,7 @@ ggplot(data = trainData, aes(x =  n_unique_tokens,
       geom_smooth()
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 Above, we see a plot of the number of unique words in each article
 compared to the number of shares. Across channels, there does not seem
@@ -380,7 +378,7 @@ this variable may have significance in tree based models.
 #### Number of image and video
 
 ``` r
-# scatter plot of Number of words in the content
+# Scatter plot of Number of words in the content
 g5 <- ggplot(data = trainData, aes(x =  num_imgs, 
                       y = shares)) +
       geom_point(alpha = 0.50) +
@@ -399,7 +397,7 @@ g6 <- ggplot(data = trainData, aes(x =  num_videos,
 plot_grid(g5, g6,  labels = c('C', 'D')) 
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 In these scatter plots, we compare the number of images/videos to the
 number of shares. As a reader, when I see interesting images and videos
@@ -421,7 +419,7 @@ ggplot(data = trainData, aes(x =  num_keywords,
       geom_smooth()
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 In above plot, we compare the number of keywords that appear in an
 article to the number of shares. Across channels, there does not appear
@@ -452,7 +450,7 @@ g8 <- ggplot(data = trainData, aes(x =  rate_negative_words,
 plot_grid(g7, g8,  labels = c('A', 'B')) 
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 In above scatter plots, we compare the positive/negative rate of words
 that appear in an article to the number of shares of an article. If the
@@ -475,7 +473,7 @@ ggplot(data = trainData, aes(x =     title_subjectivity,
       geom_smooth()
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 In the title subjectivity scatter plot, we compare title subjectivity to
 the number of shares. Across channels, there does not seem to be a
@@ -504,7 +502,7 @@ g10 <- ggplot(data = trainData, aes(x =  avg_negative_polarity,
 plot_grid(g9, g10,  labels = c('A', 'B')) 
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 In the above plots, we compare the average polarity of positive/negative
 words that appear in the article to the number of shares. If there is a
@@ -541,7 +539,7 @@ df_tmp <- trainData %>% select(c('n_tokens_title',
 corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
 ```
 
-![](lifestyle_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](lifestyle_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 Above shows the correlation matrix for the numerical variables we
 explore in EDA. Shares is the bottom row. We use this plot to find the
@@ -590,20 +588,20 @@ lm.fit1
 
     ## Linear Regression 
     ## 
-    ## 1679 samples
+    ## 1469 samples
     ##   13 predictor
     ## 
     ## Pre-processing: centered (23), scaled (23) 
     ## Resampling: Cross-Validated (10 fold, repeated 3 times) 
-    ## Summary of sample sizes: 1510, 1510, 1512, 1510, 1511, 1513, ... 
+    ## Summary of sample sizes: 1322, 1323, 1323, 1321, 1323, 1322, ... 
     ## Resampling results:
     ## 
     ##   RMSE      Rsquared    MAE     
-    ##   8637.961  0.01221978  3606.477
+    ##   9033.008  0.02491545  3703.245
     ## 
     ## Tuning parameter 'intercept' was held constant at a value of TRUE
 
-First linear model has an RMSE of 8637.96.
+First linear model has an RMSE of 9033.01.
 
 #### Linear model 2 - Logarithmic Linear Regression
 
@@ -616,13 +614,13 @@ shares.
 train_df <- trainData[ ,unlist(lapply(trainData, is.numeric))]
 test_df <- testData[ ,unlist(lapply(testData, is.numeric))]
 
-# code used to get regression variables
+# Code used to get regression variables
 ## fit using forward selection
 #forward <- regsubsets(log(shares) ~ .,
 #                      data = train_df,
 #                      nvmax = 10,
 #                      method = "forward")
-## summary
+## Summary
 #mod_summary <- summary(forward)
 
 # Train model
@@ -641,16 +639,16 @@ lm.fit2
 
     ## Linear Regression 
     ## 
-    ## 1679 samples
+    ## 1469 samples
     ##   10 predictor
     ## 
     ## Pre-processing: centered (10), scaled (10) 
     ## Resampling: Cross-Validated (10 fold, repeated 3 times) 
-    ## Summary of sample sizes: 1511, 1510, 1511, 1511, 1513, 1510, ... 
+    ## Summary of sample sizes: 1322, 1323, 1322, 1322, 1324, 1322, ... 
     ## Resampling results:
     ## 
-    ##   RMSE       Rsquared   MAE      
-    ##   0.9309279  0.0631396  0.7039211
+    ##   RMSE      Rsquared    MAE      
+    ##   0.928874  0.06304165  0.7048168
     ## 
     ## Tuning parameter 'intercept' was held constant at a value of TRUE
 
@@ -684,7 +682,7 @@ selected subset of predictors in each tree, we will possibly reduce the
 correlation and gain stronger prediction.
 
 ``` r
-# Tuning parameter is mtry, use values of 1,..,4
+# Tuning parameter is mtry, use values of 1,...,5
 rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
                  n_unique_tokens+avg_positive_polarity+
                  avg_negative_polarity + num_hrefs +  num_imgs +
@@ -714,20 +712,20 @@ rfFit
 
     ## Random Forest 
     ## 
-    ## 1679 samples
+    ## 1469 samples
     ##   14 predictor
     ## 
     ## Pre-processing: centered (19), scaled (19) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 1343, 1343, 1344, 1343, 1343 
+    ## Summary of sample sizes: 1175, 1175, 1176, 1175, 1175 
     ## Resampling results:
     ## 
-    ##   RMSE      Rsquared    MAE     
-    ##   8901.836  0.01097333  3489.005
+    ##   RMSE      Rsquared     MAE     
+    ##   9182.264  0.007643484  3609.253
     ## 
     ## Tuning parameter 'mtry' was held constant at a value of 1
 
-The random forest model has an RMSE of 8901.84.
+The random forest model has an RMSE of 9182.26.
 
 #### Boosted Tree Model
 
@@ -777,25 +775,24 @@ boostFit
 
     ## Stochastic Gradient Boosting 
     ## 
-    ## 1679 samples
+    ## 1469 samples
     ##   53 predictor
     ## 
     ## No pre-processing
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 1342, 1343, 1343, 1345, 1343 
+    ## Summary of sample sizes: 1176, 1175, 1175, 1176, 1174 
     ## Resampling results:
     ## 
-    ##   RMSE      Rsquared    MAE     
-    ##   9467.401  0.00180113  3506.883
+    ##   RMSE      Rsquared     MAE     
+    ##   9265.367  0.006882423  3555.341
     ## 
     ## Tuning parameter 'n.trees' was held constant at a value of 25
-    ## Tuning parameter 'interaction.depth'
-    ##  was held constant at a value of 1
-    ## Tuning parameter 'shrinkage' was held constant at a value of
-    ##  0.1
+    ## Tuning parameter 'interaction.depth' was held constant at a value of 1
+    ## Tuning
+    ##  parameter 'shrinkage' was held constant at a value of 0.1
     ## Tuning parameter 'n.minobsinnode' was held constant at a value of 20
 
-The boosted tree model has an RMSE of 9467.4.
+The boosted tree model has an RMSE of 9265.37.
 
 ## Comparison
 
@@ -829,10 +826,10 @@ knitr::kable(t(rmseTotal),
 
 |                           |    RMSE |
 |:--------------------------|--------:|
-| Linear.Regression.Model.1 | 4751.96 |
-| Linear.Regression.Model.2 | 5496.77 |
-| Random.Forest.Model       | 4515.76 |
-| Boosting.Model            | 4666.79 |
+| Linear.Regression.Model.1 | 5102.58 |
+| Linear.Regression.Model.2 | 5804.90 |
+| Random.Forest.Model       | 4802.39 |
+| Boosting.Model            | 4963.60 |
 
 Summary Table of RMSE score
 
@@ -845,4 +842,4 @@ lowestrmse <- min(rmseLm1, rmseLm2, rfMSE, boostRMSE)
 #paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', round(lowestrmse, 2))
 ```
 
-The winning model is Random Forest. Its RMSE value is 4515.76.
+The winning model is Random Forest. Its RMSE value is 4802.39.
