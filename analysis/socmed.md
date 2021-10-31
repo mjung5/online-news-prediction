@@ -535,7 +535,7 @@ df_tmp <- trainData %>% select(c('n_tokens_title',
                           'title_subjectivity',
                           'avg_positive_polarity',
                           'avg_negative_polarity',
-                          'shares',))
+                          'shares'))
 corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
 ```
 
@@ -569,13 +569,12 @@ RMSE and R2.
 ``` r
 # Linear model 1 with train set 
 set.seed(10)
-lm.fit1 <- train(shares ~ n_tokens_title + n_tokens_content +
-                   num_hrefs + num_imgs + num_videos + num_keywords +
-                   rate_positive_words + rate_negative_words + title_subjectivity +
+lm.fit1 <- train(shares ~ n_tokens_title + num_hrefs + num_imgs + num_videos + 
+                   num_keywords + rate_positive_words + title_subjectivity + 
                    n_unique_tokens + avg_positive_polarity + avg_negative_polarity +
                    weekday + I(n_tokens_title^2) + I(n_unique_tokens^2) +
                    I(num_keywords ^2) + I(avg_positive_polarity^2) +
-                    I(num_hrefs^2), 
+                   I(num_hrefs^2), 
                  data = trainData,
                  method="lm",
                  preProcess = c("center","scale"),
@@ -589,19 +588,19 @@ lm.fit1
     ## Linear Regression 
     ## 
     ## 1626 samples
-    ##   13 predictor
+    ##   11 predictor
     ## 
-    ## Pre-processing: centered (23), scaled (23) 
+    ## Pre-processing: centered (21), scaled (21) 
     ## Resampling: Cross-Validated (10 fold, repeated 3 times) 
     ## Summary of sample sizes: 1464, 1462, 1463, 1464, 1463, 1463, ... 
     ## Resampling results:
     ## 
     ##   RMSE      Rsquared    MAE     
-    ##   5045.921  0.02705076  2672.041
+    ##   5049.997  0.02344574  2659.136
     ## 
     ## Tuning parameter 'intercept' was held constant at a value of TRUE
 
-First linear model has an RMSE of 5045.92.
+First linear model has an RMSE of 5050.
 
 #### Linear model 2 - Logarithmic Linear Regression
 
@@ -683,12 +682,10 @@ correlation and gain stronger prediction.
 
 ``` r
 # Tuning parameter is mtry, use values of 1,...,5
-rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
-                 n_unique_tokens+avg_positive_polarity+
-                 avg_negative_polarity + num_hrefs +  num_imgs +
+rfFit <- train(shares ~ n_tokens_title + n_unique_tokens + avg_positive_polarity +
+                 avg_negative_polarity + num_hrefs + num_imgs +
                  num_videos + num_keywords + title_sentiment_polarity +
-                 rate_positive_words + rate_negative_words +
-                 title_subjectivity + weekday,
+                 rate_positive_words + title_subjectivity + weekday,
                  data = trainData, 
                  method = "rf", 
                  trControl = trainControl(method = "cv", number = 5),
@@ -696,12 +693,10 @@ rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
                  tuneGrid = data.frame(mtry = (1:5)))
 
 # Re-train using best hyperparameter value
-rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
-                 n_unique_tokens+avg_positive_polarity+
-                 avg_negative_polarity + num_hrefs +  num_imgs +
+rfFit <- train(shares ~ n_tokens_title + n_unique_tokens + avg_positive_polarity +
+                 avg_negative_polarity + num_hrefs + num_imgs +
                  num_videos + num_keywords + title_sentiment_polarity +
-                 rate_positive_words + rate_negative_words +
-                 title_subjectivity + weekday,
+                 rate_positive_words + title_subjectivity + weekday,
                  data = trainData, 
                  method = "rf", 
                  trControl = trainControl(method = "cv", number = 5),
@@ -713,19 +708,19 @@ rfFit
     ## Random Forest 
     ## 
     ## 1626 samples
-    ##   14 predictor
+    ##   12 predictor
     ## 
-    ## Pre-processing: centered (19), scaled (19) 
+    ## Pre-processing: centered (17), scaled (17) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 1302, 1299, 1301, 1302, 1300 
+    ## Summary of sample sizes: 1301, 1303, 1299, 1302, 1299 
     ## Resampling results:
     ## 
     ##   RMSE      Rsquared    MAE     
-    ##   5165.229  0.02267476  2664.667
+    ##   5127.554  0.01365881  2669.836
     ## 
     ## Tuning parameter 'mtry' was held constant at a value of 1
 
-The random forest model has an RMSE of 5165.23.
+The random forest model has an RMSE of 5127.55.
 
 #### Boosted Tree Model
 
@@ -780,19 +775,20 @@ boostFit
     ## 
     ## No pre-processing
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 1301, 1301, 1300, 1302, 1300 
+    ## Summary of sample sizes: 1303, 1300, 1300, 1300, 1301 
     ## Resampling results:
     ## 
     ##   RMSE      Rsquared    MAE     
-    ##   4971.567  0.07902553  2572.801
+    ##   4985.558  0.08967454  2525.663
     ## 
     ## Tuning parameter 'n.trees' was held constant at a value of 25
-    ## Tuning parameter 'interaction.depth' was held constant at a value of 5
     ## Tuning
-    ##  parameter 'shrinkage' was held constant at a value of 0.1
+    ## 
+    ## Tuning parameter 'shrinkage' was held constant at a value of 0.1
+    ## 
     ## Tuning parameter 'n.minobsinnode' was held constant at a value of 20
 
-The boosted tree model has an RMSE of 4971.57.
+The boosted tree model has an RMSE of 4985.56.
 
 ## Comparison
 
@@ -810,12 +806,12 @@ boostPred <- predict(boostFit, newdata = test_df)
 # Calculate RMSE
 rmseLm1 <- sqrt(mean((predLm1 - testData$shares)^2))
 rmseLm2 <- sqrt(mean((predLm2 - test_df$shares)^2))
-rfMSE <- sqrt(mean((rfPred - testData$shares)^2))
+rfRMSE <- sqrt(mean((rfPred - testData$shares)^2))
 boostRMSE <- sqrt(mean((boostPred - test_df$shares)^2))
 
 rmseTotal <- data.frame('Linear Regression Model 1' = rmseLm1, 
                    'Linear Regression Model 2' = rmseLm2, 
-                   'Random Forest Model' = rfMSE, 
+                   'Random Forest Model' = rfRMSE, 
                    'Boosting Model' = boostRMSE)
 
 knitr::kable(t(rmseTotal),
@@ -826,20 +822,20 @@ knitr::kable(t(rmseTotal),
 
 |                           |    RMSE |
 |:--------------------------|--------:|
-| Linear.Regression.Model.1 | 6127.38 |
+| Linear.Regression.Model.1 | 6109.73 |
 | Linear.Regression.Model.2 | 7090.62 |
-| Random.Forest.Model       | 6084.14 |
-| Boosting.Model            | 6083.95 |
+| Random.Forest.Model       | 6090.83 |
+| Boosting.Model            | 6084.12 |
 
 Summary Table of RMSE score
 
 ``` r
 # Finding the best model for each channel
-winningModel <- ifelse((rmseLm1 < rmseLm2) & (rmseLm1 < rfMSE) & (rmseLm1 < boostRMSE), 'Linear Model 1', 
-       ifelse((rmseLm2 < rfMSE) & (rmseLm2 < boostRMSE), 'Linear Model 2',
-       ifelse(rfMSE < boostRMSE, 'Random Forest', 'Boosted Tree')))
-lowestrmse <- min(rmseLm1, rmseLm2, rfMSE, boostRMSE)
+winningModel <- ifelse((rmseLm1 < rmseLm2) & (rmseLm1 < rfRMSE) & (rmseLm1 < boostRMSE), 'Linear Model 1', 
+       ifelse((rmseLm2 < rfRMSE) & (rmseLm2 < boostRMSE), 'Linear Model 2',
+       ifelse(rfRMSE < boostRMSE, 'Random Forest', 'Boosted Tree')))
+lowestrmse <- min(rmseLm1, rmseLm2, rfRMSE, boostRMSE)
 #paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', round(lowestrmse, 2))
 ```
 
-The winning model is Boosted Tree. Its RMSE value is 6083.95.
+The winning model is Boosted Tree. Its RMSE value is 6084.12.

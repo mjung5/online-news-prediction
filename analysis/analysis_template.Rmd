@@ -372,7 +372,7 @@ df_tmp <- trainData %>% select(c('n_tokens_title',
                           'title_subjectivity',
                           'avg_positive_polarity',
                           'avg_negative_polarity',
-                          'shares',))
+                          'shares'))
 corrplot(cor(df_tmp), type = 'lower', diag = FALSE)
 
 ```
@@ -392,13 +392,12 @@ The first linear regression model will have predictors selected by EDA. we will 
 ```{r message=FALSE}
 # Linear model 1 with train set 
 set.seed(10)
-lm.fit1 <- train(shares ~ n_tokens_title + n_tokens_content +
-                   num_hrefs + num_imgs + num_videos + num_keywords +
-                   rate_positive_words + rate_negative_words + title_subjectivity +
+lm.fit1 <- train(shares ~ n_tokens_title + num_hrefs + num_imgs + num_videos + 
+                   num_keywords + rate_positive_words + title_subjectivity + 
                    n_unique_tokens + avg_positive_polarity + avg_negative_polarity +
                    weekday + I(n_tokens_title^2) + I(n_unique_tokens^2) +
                    I(num_keywords ^2) + I(avg_positive_polarity^2) +
-                    I(num_hrefs^2), 
+                   I(num_hrefs^2), 
                  data = trainData,
                  method="lm",
                  preProcess = c("center","scale"),
@@ -456,12 +455,10 @@ Random Forest method,  which shares the idea of bagging, but extends the idea an
 
 ```{r, cache=TRUE}
 # Tuning parameter is mtry, use values of 1,...,5
-rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
-                 n_unique_tokens+avg_positive_polarity+
-                 avg_negative_polarity + num_hrefs +  num_imgs +
+rfFit <- train(shares ~ n_tokens_title + n_unique_tokens + avg_positive_polarity +
+                 avg_negative_polarity + num_hrefs + num_imgs +
                  num_videos + num_keywords + title_sentiment_polarity +
-                 rate_positive_words + rate_negative_words +
-                 title_subjectivity + weekday,
+                 rate_positive_words + title_subjectivity + weekday,
                  data = trainData, 
                  method = "rf", 
                  trControl = trainControl(method = "cv", number = 5),
@@ -469,12 +466,10 @@ rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
                  tuneGrid = data.frame(mtry = (1:5)))
 
 # Re-train using best hyperparameter value
-rfFit <- train(shares ~ n_tokens_title + n_tokens_content+
-                 n_unique_tokens+avg_positive_polarity+
-                 avg_negative_polarity + num_hrefs +  num_imgs +
+rfFit <- train(shares ~ n_tokens_title + n_unique_tokens + avg_positive_polarity +
+                 avg_negative_polarity + num_hrefs + num_imgs +
                  num_videos + num_keywords + title_sentiment_polarity +
-                 rate_positive_words + rate_negative_words +
-                 title_subjectivity + weekday,
+                 rate_positive_words + title_subjectivity + weekday,
                  data = trainData, 
                  method = "rf", 
                  trControl = trainControl(method = "cv", number = 5),
@@ -539,12 +534,12 @@ boostPred <- predict(boostFit, newdata = test_df)
 # Calculate RMSE
 rmseLm1 <- sqrt(mean((predLm1 - testData$shares)^2))
 rmseLm2 <- sqrt(mean((predLm2 - test_df$shares)^2))
-rfMSE <- sqrt(mean((rfPred - testData$shares)^2))
+rfRMSE <- sqrt(mean((rfPred - testData$shares)^2))
 boostRMSE <- sqrt(mean((boostPred - test_df$shares)^2))
 
 rmseTotal <- data.frame('Linear Regression Model 1' = rmseLm1, 
                    'Linear Regression Model 2' = rmseLm2, 
-                   'Random Forest Model' = rfMSE, 
+                   'Random Forest Model' = rfRMSE, 
                    'Boosting Model' = boostRMSE)
 
 knitr::kable(t(rmseTotal),
@@ -555,10 +550,10 @@ knitr::kable(t(rmseTotal),
 
 ```{r message=FALSE}
 # Finding the best model for each channel
-winningModel <- ifelse((rmseLm1 < rmseLm2) & (rmseLm1 < rfMSE) & (rmseLm1 < boostRMSE), 'Linear Model 1', 
-       ifelse((rmseLm2 < rfMSE) & (rmseLm2 < boostRMSE), 'Linear Model 2',
-       ifelse(rfMSE < boostRMSE, 'Random Forest', 'Boosted Tree')))
-lowestrmse <- min(rmseLm1, rmseLm2, rfMSE, boostRMSE)
+winningModel <- ifelse((rmseLm1 < rmseLm2) & (rmseLm1 < rfRMSE) & (rmseLm1 < boostRMSE), 'Linear Model 1', 
+       ifelse((rmseLm2 < rfRMSE) & (rmseLm2 < boostRMSE), 'Linear Model 2',
+       ifelse(rfRMSE < boostRMSE, 'Random Forest', 'Boosted Tree')))
+lowestrmse <- min(rmseLm1, rmseLm2, rfRMSE, boostRMSE)
 #paste('The Winning Model is:', paste0(winningModel, '!'), 'Its RMSE value is', round(lowestrmse, 2))
 ```
 
